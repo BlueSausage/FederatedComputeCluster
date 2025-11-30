@@ -1,0 +1,2 @@
+# FederatedComputeCluster
+This repository contains a simulation of a federated compute cluster, where multiple data centers act as autonomous agents. Each agent receives computational jobs with varying costs and must decide whether to process them locally or offer them on a decentralized market. Using tabular Q-learning, agents learn bidding and pricing strategies over repeated interactions. The goal is to study whether stable, socially beneficial strategies emerge and how profits and workloads distribute among agents in a self-organizing market.

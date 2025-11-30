@@ -1,0 +1,103 @@
+\documentclass[a4paper,12pt,ngerman]{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{babel}
+\usepackage{graphicx}
+\usepackage{enumitem}
+
+
+\title{Lernverhalten und Gewinnverteilung im Multi-Agenten-Markt für Auftragsvergabe - Skizze}
+
+\author{
+Niklas	Schneider
+}
+
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section*{Einleitung}
+Im Rahmen des Praktikum zu verteilten adaptiven Systemen wurde die Auftragsvergabe zwischen Rechenzentren (RZs) bisher zentral oder mit festen Regeln organisiert. In dieser Arbeit wird das Szenario zu einem dezentralen Markt erweitert, in dem mehrere RZs als autonome Agenten agieren. Sie können Aufträge auf dem Markt zu einem Mindestpreis anbieten oder mit Erlösen aus der Selbstbearbeitung auf fremde Aufträge bieten. Ziel ist es, mit Hilfe von Q-Learning zu untersuchen, wie sich Strategien, Gewinne und die Auftragsverteilung im Multi-Agenten-Markt entwickeln, insbesondere unter Berücksichtigung verschiedener Kostenmodelle.
+
+\section*{Forschungsfrage}
+Im Zentrum der Arbeit steht die Frage, wie sich das Verhalten und die Ergebnisse im beschriebenen Marktszenario entwickeln, wenn mehrere RZs als autonome Agenten mithilfe von Q-Learning agieren. Dabei werden insbesondere die Stabilität der Strategien, die Herausbildung von Gewinnern und die Verteilung der Aufträge analysiert.
+\\
+Daraus ergeben sich die folgenden Forschungsfragen:
+\begin{enumerate}
+    \item Entwickeln Agenten im Multi-Agenten-Markt für Auftragsvergabe durch wiederholte Teilnahme stabile und vorteilhafte Strategien?
+    \item Verteilen sich Gewinne und Aufträge langfristig gleichmäßig, oder setzen sich einzelne Agenten als Gewinner durch?
+    \item Wie unterscheiden sich Gewinne, Strategien und Systemstabilität bei verschiedenen Auktionsverfahren (First-Price, Vickrey) im Multi-Agenten-Markt für Auftragsvergabe?
+\end{enumerate}
+
+\section*{Vorgehensweise}
+Für diese Arbeit wird eine simulationsbasierte Analyse durchgeführt. Dazu wird eine Multi-Agenten-Simulation entwickelt, in der mehrere RZs als autonome Agenten mithilfe von Q-Learning im Markt agieren. Die Agenten verfügen dabei jeweils nur über Informationen zu ihren eigenen Kosten und zur Gebühr für die Bearbeitung eines Auftrags. Untersucht werden sowohl Szenarien mit festen Kosten je Agent als auch mit dynamischen, pro Runde neu gezogenen Kosten. Dieses Vorgehen ermöglicht es, das Zusammenspiel von individuellen Lernprozessen, Strategieentwicklung und Systemdynamik im dezentralen Markt direkt zu beobachten. Analytische Lösungen sind bei komplexem Agentenverhalten und Lernalgorithmen oft nicht praktikabel. Daher bietet die simulationsbasierte Auswertung eine realistische Möglichkeit, die Forschungsfragen systematisch zu untersuchen. Durch Variation von Parametern wie Kostenstruktur oder Agentenzahl kann zudem die Robustheit der Ergebnisse überprüft werden.
+
+
+\section*{Spezialfälle}
+
+Einige Spezialfälle des Modells erlauben bereits vorab begründete Vermutungen zur Beantwortung der Forschungsfragen:
+\begin{itemize}
+    \item Homogene Kostenverteilung:\\
+    Sind die Kosten aller Agenten über alle Runden hinweg identisch, ist zu erwarten, dass sich Gewinne und Aufträge langfristig annähernd gleichmäßig auf alle Agenten verteilen. Es gibt keine systematischen Vorteile und keinen Anreiz, Aufträge abzugeben. Das System bleibt ausgeglichen.
+    \item Ein Agent mit dauerhaft niedrigsten Kosten:\\
+    Wenn ein Agent stets die geringsten Kosten hat, wird dieser besonders häufig Fremdaufträge übernehmen und entsprechend höhere Gewinne erzielen, da er durch seine Kostenvorteile mehr Geld zur Verfügung hat, um auf Aufträge zu bieten. In diesem Fall entsteht eine klare Dominanz, unabhängig vom Lernverhalten der Agenten.
+    \item Statische vs. dynamische Kosten:\\
+    In Szenarien mit statischen (fixen) Kosten pro Agent dürften sich über viele Runden stabile Strategien und Dominanzen ausbilden. Bei dynamisch in jeder Runde neu gezogenen Kosten könnten Gewinne und Strategien stärker schwanken und weniger stabile Gewinner entstehen.
+\end{itemize}
+
+\section*{Gliederung}
+
+\begin{enumerate}
+    \item Einleitung und Szenariobeschreibung
+    \begin{itemize}
+        \item Motivation und Bezug zum Praktikum
+        \item Beschreibung des Marktszenarios
+        \item Zielsetzung der Arbeit
+    \end{itemize}
+    \item Forschungsfragen
+    \begin{itemize}
+        \item Darstellung und Einordnung der Forschungsfragen
+    \end{itemize}
+    \item Verwandte Arbeiten und theoretischer Hintergrund
+    \begin{itemize}
+        \item Kurzer Überblick zu Q-Learning, Märkten und Multi-Agenten-Systemen
+    \end{itemize}
+    \item Methodik
+    \begin{itemize}
+        \item Beschreibung des Simulationsmodells
+        \item Definition der Agenten, Aktionen und Belohnungsfunktion
+        \item Kostenmodelle (fix vs. dynamisch), Informationslage
+        \item Erläuterung der gewählten Parameter
+    \end{itemize}
+    \item Experimente und Auswertung
+    \begin{itemize}
+        \item Aufbau und Ablauf der Simulationen
+        \item Definition und Berechnung der Metriken (z.B. Gewinnverteilung, Dominanz, Stabilität)
+        \item Darstellung und Analyse der Ergebnisse
+    \end{itemize}
+    \item Diskussion
+    \begin{itemize}
+        \item Interpretation der Ergebnisse
+        \item Bezug zu den Forschungsfragen und Spezialfällen
+        \item Limitationen und mögliche Erweiterungen
+    \end{itemize}
+    \item Fazit und Ausblick
+    \begin{itemize}
+        \item Zusammenfassung der Erkenntnisse
+        \item Ausblick auf mögliche weiterführende Arbeiten
+    \end{itemize}
+\end{enumerate}
+
+\section*{Arbeitsplan}
+\begin{enumerate}
+    \item Modellierung und Implementierung der Simulation (1 Woche)
+    \item Definition der Agentenregeln und Q-Learning-Logik (1 Woche)
+    \item Testläufe und Durchführung der Experimente (verschiedene Kostenmodelle, ggf. Parametervariationen) (1 Woche)
+    \item Auswertung und Visualisierung der Simulationsergebnisse (1 Woche)
+    \item Ausarbeitung der schriftlichen Hausarbeit (alle Abschnitte) (1 Woche)
+    \item Korrekturen, Feinschliff und Abgabevorbereitung (1 Woche)
+\end{enumerate}
+
+\end{document}

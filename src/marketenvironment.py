@@ -5,7 +5,7 @@ class Bid():
     bidder: str
     bid: int
 
-class Market():
+class MarketEnvironment():
     def __init__(self, num_of_agents):
         self.agents = num_of_agents
         self.market = {}

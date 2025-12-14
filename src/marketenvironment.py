@@ -42,7 +42,8 @@ class RZ():
         self.cost = min(max(1, self.cost), 10)
         return self.cost
 
-    def choose_action(self, state_id):
+    def choose_action(self, state):
+        state_id = state[0] * 3 + state[1]
         if random.random() < self.epsilon:
             action = random.randint(0, self.action_space - 1)
         else:
@@ -77,12 +78,24 @@ class MarketEnvironment():
         for agent in self.agents:
             agent.cost = agent.draw_cost()
             self.observations[agent.name] = (
-                self.get_cost_level(agent.cost) * 3 + self.market_load_prev
+                self.get_cost_level(agent.cost), self.market_load_prev
             )
         self.price = self.determine_price()
+        return self.observations
 
-    def step(self):
-        # return next_state, rewards, done, info
+    def step(self, actions):
+        # get all actions, perform them in specific order:
+        # self process
+        # place on market
+        # bid on market with factor and earnings from self processing
+        # determine winners
+        # calculate rewards
+        # save market load
+        # clear jobs and bids
+        # generate new costs, price
+        # get next_state (cost_level, prev_marketload)
+        # return next_state, rewards, done and info
+
         pass
 
     def generate_rz_list(self, num_rz, costs, sigma):

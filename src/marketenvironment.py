@@ -15,7 +15,7 @@ class Bid():
 class RZ():
     def __init__(
         self, name, mean_cost, sigma, state_space, action_space,
-        alpha=0.1, gamma=0.95, epsilon=0.1
+        alpha=0.1, gamma=0.95, epsilon=0.5
     ):
         self.name = name
         self.mean_cost = mean_cost
@@ -75,7 +75,7 @@ class MarketEnvironment():
         self.jobs = []
         self.bids = []
         self.market_load_prev = 0
-        for agent in self.agents:
+        for agent in self.agents.values():
             agent.cost = agent.draw_cost()
             self.observations[agent.name] = (
                 self.get_cost_level(agent.cost), self.market_load_prev
@@ -84,33 +84,52 @@ class MarketEnvironment():
         return self.observations
 
     def step(self, actions):
-        # get all actions, perform them in specific order:
-        # self process
-        # place on market
-        # bid on market with factor and earnings from self processing
+        rewards = {}
+        for agent_name, action in actions.items():
+            print(agent_name, action)
+            earnings = self.price - self.agents[agent_name].cost
+            if action == 0:
+                print('List job on market')
+                self.list_job(agent_name)
+            elif action == 1:
+                print('self processing without bidding')
+                rewards[agent_name] = earnings
+            elif action == 2:
+                print('bid 0.25 of earnings from self processing')
+                self.place_bid(agent_name, earnings * 0.25)
+            elif action == 3:
+                print('bid 0.5 of earnings from self processing')
+                self.place_bid(agent_name, earnings * 0.5)
+            elif action == 5:
+                print('bid 0.75 of earnings from self processing')
+                self.place_bid(agent_name, earnings * 0.75)
+            elif action == 6:
+                print('bid all from self processing')
+                self.place_bid(agent_name, earnings * 1.0)
+        self.market_load_prev = len(self.jobs)
         # determine winners
-        # calculate rewards
-        # save market load
         # clear jobs and bids
+        # calculate rewards
         # generate new costs, price
         # get next_state (cost_level, prev_marketload)
         # return next_state, rewards, done and info
 
-        pass
+        return self.observations, {}, False, {}
 
     def generate_rz_list(self, num_rz, costs, sigma):
-        rz_list = []
+        rz_list = {}
         for i in range(num_rz):
+            name = f'RZ{i+1}'
             rz = RZ(
-                name=f'RZ{i+1}', mean_cost=costs, sigma=sigma,
+                name=name, mean_cost=costs, sigma=sigma,
                 state_space=self.state_space, action_space=self.action_space
             )
-            rz_list.append(rz)
+            rz_list[name] = rz
         return rz_list
 
     def determine_price(self):
         costs = []
-        for rz in self.agents:
+        for rz in self.agents.values():
             costs.append(rz.cost)
         return math.ceil(statistics.mean(costs))
 

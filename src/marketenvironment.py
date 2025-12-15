@@ -86,28 +86,37 @@ class MarketEnvironment():
     def step(self, actions):
         rewards = {}
         for agent_name, action in actions.items():
-            print(agent_name, action)
+            rewards[agent_name] = 0
             earnings = self.price - self.agents[agent_name].cost
             if action == 0:
-                print('List job on market')
                 self.list_job(agent_name)
             elif action == 1:
-                print('self processing without bidding')
-                rewards[agent_name] = earnings
+                rewards[agent_name] += earnings
             elif action == 2:
-                print('bid 0.25 of earnings from self processing')
                 self.place_bid(agent_name, earnings * 0.25)
             elif action == 3:
-                print('bid 0.5 of earnings from self processing')
                 self.place_bid(agent_name, earnings * 0.5)
             elif action == 5:
-                print('bid 0.75 of earnings from self processing')
                 self.place_bid(agent_name, earnings * 0.75)
             elif action == 6:
-                print('bid all from self processing')
                 self.place_bid(agent_name, earnings * 1.0)
         self.market_load_prev = len(self.jobs)
         # determine winners
+        winners = self.determine_winner()
+        print("determine winner")
+        print("bids: ", self.bids)
+        print("winners:")
+        for bid in winners:
+            print("available jobs on market: ", self.jobs)
+            print("bid winner: ", bid.bidder)
+            # calculate rewards of winner
+            rewards[bid.bidder] -= bid.bid
+            rewards[bid.bidder] += self.price - self.agents[bid.bidder].cost
+            # calculate rewards of job provider
+            winner = random.choice(self.jobs)
+            print("job provide winner: ", winner)
+            self.jobs.remove(winner)
+            rewards[winner] += bid.bid
         # clear jobs and bids
         # calculate rewards
         # generate new costs, price
@@ -153,12 +162,3 @@ class MarketEnvironment():
         if not self.jobs:
             raise ValueError("No jobs listed")
         return self.bids[:len(self.jobs)]
-
-    def pay_seller(self, job):
-        if not self.jobs:
-            raise ValueError("No jobs listed")
-        if not self.bids:
-            raise ValueError("No bids placed")
-        earning = self.bids.pop(0).bid
-        self.jobs.remove(job)
-        return earning

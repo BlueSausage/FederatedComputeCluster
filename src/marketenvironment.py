@@ -48,10 +48,19 @@ class RZ():
             action = random.randint(0, self.action_space - 1)
         else:
             action = np.argmax(self.q_table[state_id])
+        self.epsilon *= 0.99  # decay epsilon
         return action
 
-    def learn(self):
-        pass
+    def learn(self, state, action, reward, next_state):
+        state_id = state[0] * 3 + state[1]
+        next_state_id = next_state[0] * 3 + next_state[1]
+        self.q_table[state_id][action] = (
+            self.q_table[state_id][action] + self.alpha * (
+                reward + self.gamma *
+                np.max(self.q_table[next_state_id]) -
+                self.q_table[state_id][action]
+            )
+        )
 
 
 class MarketEnvironment():
@@ -81,7 +90,7 @@ class MarketEnvironment():
                 self.get_cost_level(agent.cost), self.market_load_prev
             )
         self.price = self.determine_price()
-        return self.observations
+        return self.observations.copy()
 
     def step(self, actions):
         rewards = {}
@@ -92,38 +101,38 @@ class MarketEnvironment():
                 self.list_job(agent_name)
             elif action == 1:
                 rewards[agent_name] += earnings
-            elif action == 2:
-                self.place_bid(agent_name, earnings * 0.25)
-            elif action == 3:
-                self.place_bid(agent_name, earnings * 0.5)
-            elif action == 5:
-                self.place_bid(agent_name, earnings * 0.75)
-            elif action == 6:
-                self.place_bid(agent_name, earnings * 1.0)
-        self.market_load_prev = len(self.jobs)
+            if earnings > 0:
+                if action == 2:
+                    self.place_bid(agent_name, earnings * 0.25)
+                elif action == 3:
+                    self.place_bid(agent_name, earnings * 0.5)
+                elif action == 5:
+                    self.place_bid(agent_name, earnings * 0.75)
+                elif action == 6:
+                    self.place_bid(agent_name, earnings * 1.0)
+        self.market_load_prev = len(self.jobs) if len(self.jobs) <= 2 else 2
         # determine winners
         winners = self.determine_winner()
-        print("determine winner")
-        print("bids: ", self.bids)
-        print("winners:")
         for bid in winners:
-            print("available jobs on market: ", self.jobs)
-            print("bid winner: ", bid.bidder)
-            # calculate rewards of winner
+            # calculate rewards of bidder
             rewards[bid.bidder] -= bid.bid
             rewards[bid.bidder] += self.price - self.agents[bid.bidder].cost
             # calculate rewards of job provider
             winner = random.choice(self.jobs)
-            print("job provide winner: ", winner)
             self.jobs.remove(winner)
             rewards[winner] += bid.bid
         # clear jobs and bids
-        # calculate rewards
+        self.jobs = []
+        self.bids = []
         # generate new costs, price
-        # get next_state (cost_level, prev_marketload)
+        for agent in self.agents.values():
+            agent.cost = agent.draw_cost()
+            self.observations[agent.name] = (
+                self.get_cost_level(agent.cost), self.market_load_prev
+            )
+        self.price = self.determine_price()
         # return next_state, rewards, done and info
-
-        return self.observations, {}, False, {}
+        return self.observations.copy(), rewards, False, {}
 
     def generate_rz_list(self, num_rz, costs, sigma):
         rz_list = {}
@@ -160,5 +169,5 @@ class MarketEnvironment():
 
     def determine_winner(self):
         if not self.jobs:
-            raise ValueError("No jobs listed")
+            return []
         return self.bids[:len(self.jobs)]

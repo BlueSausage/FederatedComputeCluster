@@ -15,7 +15,7 @@ class Bid():
 class RZ():
     def __init__(
         self, name, mean_cost, sigma, state_space, action_space,
-        alpha=0.1, gamma=0.95, epsilon=0.5
+        alpha=0.1, gamma=0.95, epsilon=0.9
     ):
         self.name = name
         self.mean_cost = mean_cost
@@ -65,6 +65,8 @@ class RZ():
 
 class MarketEnvironment():
     def __init__(self, num_agents=6, costs=5, sigma=2):
+        self.num_agents = num_agents
+
         self.state_space = 9
         self.action_space = 6
 
@@ -87,7 +89,8 @@ class MarketEnvironment():
         for agent in self.agents.values():
             agent.cost = agent.draw_cost()
             self.observations[agent.name] = (
-                self.get_cost_level(agent.cost), self.market_load_prev
+                self.get_profitability_level(agent.cost),
+                self.get_market_level()
             )
         self.price = self.determine_price()
         return self.observations.copy()
@@ -110,7 +113,7 @@ class MarketEnvironment():
                     self.place_bid(agent_name, earnings * 0.75)
                 elif action == 6:
                     self.place_bid(agent_name, earnings * 1.0)
-        self.market_load_prev = len(self.jobs) if len(self.jobs) <= 2 else 2
+        self.market_load_prev = len(self.jobs)
         # determine winners
         winners = self.determine_winner()
         for bid in winners:
@@ -128,7 +131,8 @@ class MarketEnvironment():
         for agent in self.agents.values():
             agent.cost = agent.draw_cost()
             self.observations[agent.name] = (
-                self.get_cost_level(agent.cost), self.market_load_prev
+                self.get_profitability_level(agent.cost),
+                self.get_market_level()
             )
         self.price = self.determine_price()
         # return next_state, rewards, done and info
@@ -151,13 +155,20 @@ class MarketEnvironment():
             costs.append(rz.cost)
         return math.ceil(statistics.mean(costs))
 
-    def get_cost_level(self, cost):
-        if cost <= 3:
+    def get_profitability_level(self, cost):
+        profitability = self.price - cost
+        if profitability < 0:
             return 0
-        elif cost <= 7:
+        if profitability == 0:
             return 1
-        else:
+        return 2
+
+    def get_market_level(self):
+        if self.market_load_prev == 0:
+            return 0
+        if self.market_load_prev >= self.num_agents // 2:
             return 2
+        return 1
 
     def list_job(self, job):
         self.jobs.append(job)

@@ -88,55 +88,102 @@ class MarketEnvironment():
         self.market_load_prev = 0
         for agent in self.agents.values():
             agent.cost = agent.draw_cost()
+        self.price = self.determine_price()
+        for agent in self.agents.values():
             self.observations[agent.name] = (
                 self.get_profitability_level(agent.cost),
                 self.get_market_level()
             )
-        self.price = self.determine_price()
         return self.observations.copy()
 
     def step(self, actions):
+        action_names = ["list_job", "self_processing", "bid_0.25",
+                        "bid_0.5", "bid_0.75", "bid_1.0"]
+        state_names = [
+            "(loss;empty_market)",
+            "(loss;some_jobs)",
+            "(loss;full_market)",
+            "(break_even;empty_market)",
+            "(break_even;some_jobs)",
+            "(break_even;full_market)",
+            "(profit;empty_market)",
+            "(profit;some_jobs)",
+            "(profit;full_market)"
+        ]
+        current = {}
         rewards = {}
+        # print(f"======Price: {self.price}========")
         for agent_name, action in actions.items():
-            rewards[agent_name] = 0
             earnings = self.price - self.agents[agent_name].cost
+            rewards[agent_name] = 0
+            current[agent_name] = (
+                f"Agent {agent_name} with state "
+                f"{self.observations[agent_name]} "
+                f"{state_names[self.observations[agent_name][0] * 3 + self.observations[agent_name][1]]} "
+                f"chooses {action} ({action_names[action]}) "
+                f"with cost {self.agents[agent_name].cost} "
+                f"and possible earnings {earnings} "
+            )
+            # list job
             if action == 0:
                 self.list_job(agent_name)
-            elif action == 1:
+            # self processing
+            if action == 1:
                 rewards[agent_name] += earnings
+            # place bids
             if earnings > 0:
                 if action == 2:
                     self.place_bid(agent_name, earnings * 0.25)
-                elif action == 3:
+                if action == 3:
                     self.place_bid(agent_name, earnings * 0.5)
-                elif action == 5:
+                if action == 4:
                     self.place_bid(agent_name, earnings * 0.75)
-                elif action == 6:
+                if action == 5:
                     self.place_bid(agent_name, earnings * 1.0)
+            elif earnings <= 0 and action >= 2:
+                rewards[agent_name] -= 10  # earnings * 2  # loss incurred
+
         self.market_load_prev = len(self.jobs)
         # determine winners
         winners = self.determine_winner()
+        # print(f"Jobs listed: {self.jobs}")
+        # print(f"Placed bids: {self.bids}")
+        # print(f"Winners: {[bid.bidder for bid in winners]}")
         for bid in winners:
             # calculate rewards of bidder
-            rewards[bid.bidder] -= bid.bid
-            rewards[bid.bidder] += self.price - self.agents[bid.bidder].cost
+            rewards[bid.bidder] += (
+                (self.price - self.agents[bid.bidder].cost) * 2 - bid.bid
+            )
             # calculate rewards of job provider
             winner = random.choice(self.jobs)
-            self.jobs.remove(winner)
             rewards[winner] += bid.bid
+            self.jobs.remove(winner)
+            self.bids.remove(bid)
+        else:
+            # if there are bidders without succes, there reward will be self processing
+            # print(f"Left over jobs: {self.jobs}")
+            for job in self.jobs:
+                rewards[job] += self.price - self.agents[job].cost
+            # print(f"Left over bids: {self.bids}")
+            for bid in self.bids:
+                rewards[bid.bidder] = self.price - self.agents[bid.bidder].cost
+
         # clear jobs and bids
         self.jobs = []
         self.bids = []
         # generate new costs, price
         for agent in self.agents.values():
+            current[agent.name] += f"-> actual reward: {rewards[agent.name]}"
             agent.cost = agent.draw_cost()
+        # print("\n".join(current.values()))
+        self.price = self.determine_price()
+        for agent in self.agents.values():
             self.observations[agent.name] = (
                 self.get_profitability_level(agent.cost),
                 self.get_market_level()
             )
-        self.price = self.determine_price()
-        # return next_state, rewards, done and info
-        return self.observations.copy(), rewards, False, {}
+        current['social_welfare'] = sum(rewards.values())
+        return self.observations.copy(), rewards, False, current
 
     def generate_rz_list(self, num_rz, costs, sigma):
         rz_list = {}
@@ -156,10 +203,10 @@ class MarketEnvironment():
         return math.ceil(statistics.mean(costs))
 
     def get_profitability_level(self, cost):
-        profitability = self.price - cost
-        if profitability < 0:
+        earnings = self.price - cost
+        if earnings < 0:
             return 0
-        if profitability == 0:
+        if earnings == 0:
             return 1
         return 2
 

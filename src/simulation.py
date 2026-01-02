@@ -48,10 +48,10 @@ def run_episode(sim_env, max_steps):
 
         step_count += 1
 
+    print("==============")
     print("Final Q-tables:")
     for agent in sim_env.agents.values():
-        print(f"Agent {agent.name}:")
-        print(agent.epsilon)
-        plot_q_tables(agent)
+        print(f"Agent {agent.name} [Epsilon: {agent.epsilon}]:")
+        # plot_q_tables(agent)
 
     print(f"Episode finished after {step_count} steps.")

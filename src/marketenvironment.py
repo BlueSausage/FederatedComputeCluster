@@ -15,7 +15,7 @@ class Bid():
 class RZ():
     def __init__(
         self, name, mean_cost, sigma, state_space, action_space,
-        alpha=0.1, gamma=0.95, epsilon=0.9
+        alpha=0.1, gamma=0.95, epsilon=0.9, learning=True
     ):
         self.name = name
         self.mean_cost = mean_cost
@@ -27,6 +27,7 @@ class RZ():
         self.alpha = alpha
         self.gamma = gamma
         self.epsilon = epsilon
+        self.learning = learning
 
         self.cost = self.draw_cost()
 
@@ -44,11 +45,11 @@ class RZ():
 
     def choose_action(self, state):
         state_id = state[0] * 3 + state[1]
-        if random.random() < self.epsilon:
+        if random.random() < self.epsilon and self.learning:
             action = random.randint(0, self.action_space - 1)
         else:
             action = np.argmax(self.q_table[state_id])
-        self.epsilon *= 0.99  # decay epsilon
+        self.epsilon *= 0.999  # decay epsilon
         return action
 
     def learn(self, state, action, reward, next_state):

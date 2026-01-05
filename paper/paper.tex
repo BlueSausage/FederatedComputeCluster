@@ -1,0 +1,99 @@
+\documentclass{sop}
+\usepackage[ngerman]{babel}
+\usepackage{lipsum}
+\usepackage{amsmath,amsfonts,amssymb}
+\usepackage{tikz, graphics, subcaption}
+\usepackage{tcolorbox}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+
+\voffset 0 cm \hoffset 0 cm \addtolength{\textwidth}{0cm}
+\addtolength{\textheight}{0cm}\addtolength{\leftmargin}{0cm}
+
+\begin{document}
+
+\title{Lernverhalten und Gewinnverteilung im Multi-Agenten-Markt für Auftragsvergabe mit Q-Learning}
+
+%***********************************************************************
+% AUTHORS INFORMATION AREA
+%***********************************************************************
+\author{Niklas Schneider
+%
+% DO NOT MODIFY THE FOLLOWING '\vspace' ARGUMENT
+\vspace{.3cm}\\
+%
+HAW Hamburg - Department Informatik \\
+Berliner Tor 5, 20099 Hamburg \\
+niklas.schneider@haw-hamburg.de
+}
+%***********************************************************************
+% END OF AUTHORS INFORMATION AREA
+%***********************************************************************
+
+\maketitle
+
+\begin{abstract}
+\lipsum[1]
+\end{abstract}
+
+\section{Einführung}
+Im Rahmen des Praktikum zu verteilten adaptiven Systemen wurde die Auftragsvergabe zwischen Rechenzentren (RZs) bisher zentral oder mit festen Regeln organisiert. In dieser Arbeit wird das Szenario zu einem dezentralen Markt erweitert, in dem mehrere RZs als autonome Agenten agieren. Sie können Aufträge auf dem Markt anbieten oder mit Erlösen aus der Selbstbearbeitung auf fremde Aufträge bieten. Dabei gibt es keinen Mindestpreis der Geboten werden muss. Die Zuteilung der Aufträge am Ende einer Runde wird zufällig nach dem Höchsten Geboten zugeordnet. Ziel ist es, mit Hilfe von Q-Learning zu untersuchen, wie sich Strategien, Gewinne und die Auftragsverteilung im Multi-Agenten-Markt entwickeln, insbesondere unter Berücksichtigung verschiedener Kostenmodelle.
+
+\subsection{Preisgestaltung}
+\dots
+
+\subsection{Auktionsverfahren}
+\dots
+
+\section{Forschungsfrage}
+Im Zentrum der Arbeit steht die Frage, wie sich das Verhalten und die Ergebnisse im beschriebenen Marktszenario entwickeln, wenn mehrere RZs als autonome Agenten mithilfe von Q-Learning agieren. Dabei werden insbesondere die Stabilität der Strategien, die Herausbildung von Gewinnern und die Verteilung der Aufträge analysiert.
+\\
+Daraus ergeben sich die folgenden Forschungsfragen:
+\begin{enumerate}
+    \item Entwickeln Agenten im Multi-Agenten-Markt für Auftragsvergabe durch wiederholte Teilnahme stabile und vorteilhafte Strategien?
+    \item Verteilen sich Gewinne und Aufträge langfristig gleichmäßig, oder setzen sich einzelne Agenten als Gewinner durch?
+    \item Wie unterscheiden sich Gewinne, Strategien und Systemstabilität bei verschiedenen Auktionsverfahren (First-Price, Vickrey) im Multi-Agenten-Markt für Auftragsvergabe?
+\end{enumerate}
+
+Um diese Fragen zu beantwortung wird eine simulationsbasierte Analyse durchgeführt. Dazu wird eine Multi-Agenten-Simulation entwickelt, in der mehrere RZs als autonome Agenten mithilfe von Q-Learning im Markt agieren. Die Agenten verfügen dabei jeweils nur über Informationen zu ihren eigenen Kosten und zur Gebühr für die Bearbeitung eines Auftrags. Untersucht werden sowohl Szenarien mit festen Kosten je Agent als auch mit dynamischen, pro Runde neu gezogenen Kosten. Dieses Vorgehen ermöglicht es, das Zusammenspiel von individuellen Lernprozessen, Strategieentwicklung und Systemdynamik im dezentralen Markt direkt zu beobachten. Analytische Lösungen sind bei komplexem Agentenverhalten und Lernalgorithmen oft nicht praktikabel. Daher bietet die simulationsbasierte Auswertung eine realistische Möglichkeit, die Forschungsfragen systematisch zu untersuchen. Durch Variation von Parametern wie Kostenstruktur oder Agentenzahl kann zudem die Robustheit der Ergebnisse überprüft werden.
+
+\section{Methodik}
+Erklären von Q-Learning. Erklären wie der explodierende Aktions- und Zustandsraum behandelt wird. Wie Q-Learning angewendet wird in dem Szenario\dots
+\subsection{Q-Learning}
+\dots
+\subsection{Explodierende State und Action Spaces}
+\dots
+\subsection{Anwendung im Markt-Szenario}
+States, Actions, Rewards
+\dots
+
+\section{Experiment}
+Was mache ich um die Forschungsfragen zu beantworten. Szenarien, Parameter, Metriken
+\dots
+
+\section{Ergebnisse}
+Lernverhalten, Gewinnverteilung, \dots
+
+\section{Diskussion}
+Forschungsfragen beantworten
+\dots
+
+\section{Fazit und Ausblick}
+\dots
+
+% ****************************************************************************
+% BIBLIOGRAPHY AREA
+% ****************************************************************************
+\begin{footnotesize}
+
+\bibliographystyle{unsrt}
+\bibliography{bibliography.bib}
+
+\end{footnotesize}
+% ****************************************************************************
+% END OF BIBLIOGRAPHY AREA
+% ****************************************************************************
+
+\end{document}
+

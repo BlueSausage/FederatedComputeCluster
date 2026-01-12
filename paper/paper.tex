@@ -58,12 +58,33 @@ Daraus ergeben sich die folgenden Forschungsfragen:
 
 Um diese Fragen zu beantwortung wird eine simulationsbasierte Analyse durchgeführt. Dazu wird eine Multi-Agenten-Simulation entwickelt, in der mehrere RZs als autonome Agenten mithilfe von Q-Learning im Markt agieren. Die Agenten verfügen dabei jeweils nur über Informationen zu ihren eigenen Kosten und zur Gebühr für die Bearbeitung eines Auftrags. Untersucht werden sowohl Szenarien mit festen Kosten je Agent als auch mit dynamischen, pro Runde neu gezogenen Kosten. Dieses Vorgehen ermöglicht es, das Zusammenspiel von individuellen Lernprozessen, Strategieentwicklung und Systemdynamik im dezentralen Markt direkt zu beobachten. Analytische Lösungen sind bei komplexem Agentenverhalten und Lernalgorithmen oft nicht praktikabel. Daher bietet die simulationsbasierte Auswertung eine realistische Möglichkeit, die Forschungsfragen systematisch zu untersuchen. Durch Variation von Parametern wie Kostenstruktur oder Agentenzahl kann zudem die Robustheit der Ergebnisse überprüft werden.
 
-\section{Methodik}
+\newpage
+\section{Methodik/Grundlagen}
 Erklären von Q-Learning. Erklären wie der explodierende Aktions- und Zustandsraum behandelt wird. Wie Q-Learning angewendet wird in dem Szenario\dots
 \subsection{Q-Learning}
-\dots
+Q-Learning ist ein modellfreies Verfahren des Reinforcement Learning, das darauf abzielt, eine optimale Strategie (Policy) $\pi^*$ für einen Agenten zu erlernen. Ziel ist es, für jeden Zustand $s$ eine Aktion $a$ zu finden, die langfristig die höchste kumulierte Belohnung verspricht. Dabei erhält der Agent bei der Ausführung von Aktion $a$ in Zustand $s$ eine direkte Belohnung $r(s, a)$ und lernt aus der Übergangsdynamik der Umgebung.
+Zentral ist die sogenannte Q-Funktion $Q(s, a)$ die den erwarteten Nutzen angibt, wenn der Agent in Zustand $s$ die Aktion $a$ wählt und danach der optimalen Policy $\pi^*$ folgt. Die optimale Q-Funktion $Q^*$ erfüllt die Bellmann-Gleichung:
+\[
+Q^*(s, a) = r(s, a) + \gamma \cdot \sum_{s'} p(s'|s, a) \cdot \max_{a'} Q^*(s', a')
+\]
+Da die Übergangswahrscheinlichkeit $p(s'|s, a)$ in modelfreien Verfahren nich bekannt sind, wird $Q(s, a)$ iterativ durch Interaktionen mit der Umgebung geschätzt. Die Aktualisierung der Q-Werte ist durch folgende Funktion definiert:
+\[
+Q(s, a) = Q(s, a) + \alpha \cdot (r(s, a) + \gamma \cdot \max_{a'}Q(s', a') - Q(s, a))
+\]
+Hierbei steht $\alpha$ für die Lernrate, die bestimmt, wie stark neue Informationen bestehende Schätzungen beeinflussen, und $\gamma$ ist der Diskontierungsfaktor, der den Einfluss zukünftiger Belohnungen gewichtet.
+\newline
+\newline
+Um sowohl neue Strategien zu entdecken als auch bekannte gute Strategien auszunutzen, wird häufig eine $\epsilon$-greedy-Policy verwendet. Mit Wahrscheinlichkeit $\epsilon$ wählt der Agent eine zufällige Aktion (Exploration), andernfalls entscheidet sich der Agent mit der Wahrscheinlichleit $1-\epsilon$ für die aktuell beste bekannte Aktion (Exploitation). Dadurch wird eine angemessenes Maß an Exploration des Zustandsraums gewährleistet.
+\newpage
 \subsection{Explodierende State und Action Spaces}
-\dots
+Beim Einsatz von Q-Learning in Multi-Agenten-Systemen führt die Kombination der Zustände und Aktionen aller Agenten zu einem exponentiell wachsenden Zustands- und Aktionsraum. Da Lernen im Kern als Suchprozess verstanden werden kann, wächst die Komplexität des Lernproblems mit der Anzahl beteiligter Variablen schnell an. Besonders im Multi-Agenten-Setting, in dem mehrere Agenten gleichzeitig agieren und interagieren, entstehen folgende Herausforderungen:
+\begin{itemize}
+    \item \textbf{Zustandsraum-Explosion:} Der Zustandsraum wächst exponentiell mit der Anzahl der Agenten und beobachtbaren Merkmale der Umgebung.
+    \item \textbf{Aktionsraum-Explosion:} Ebenso wächst der gemeinsame Aktionsraum, da potenzielle Aktionskombinationen aller Agenten berücksichtigt werden müssen.
+    \item \textbf{Ergebnisraum-Explosion:} Zusätzlich steigt die Zahl möglicher Ergebniszustände, also jener Zustände, die durch gleichzeitiges Handeln mehrerer Agenten erreicht werden können.
+\end{itemize}
+Diese Phänomene können dazu führen, dass klassische Lernverfahren wie Q-Learning schnell an praktische Grenzen stoßen, etwa, wenn der Speicher- oder Zeitaufwand für die Pflege der Q-Tabelle unhandhabbar wird. Um dieses Problem zu vermeiden, ist eine geeignete Reduktion und Diskretisierung der Zustände und Aktionen notwendig. \cite{tuylsmultiagent}
+
 \subsection{Anwendung im Markt-Szenario}
 States, Actions, Rewards
 \dots

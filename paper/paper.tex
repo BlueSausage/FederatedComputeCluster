@@ -76,7 +76,7 @@ Hierbei steht $\alpha$ für die Lernrate, die bestimmt, wie stark neue Informati
 \newline
 Um sowohl neue Strategien zu entdecken als auch bekannte gute Strategien auszunutzen, wird häufig eine $\epsilon$-greedy-Policy verwendet. Mit Wahrscheinlichkeit $\epsilon$ wählt der Agent eine zufällige Aktion (Exploration), andernfalls entscheidet sich der Agent mit der Wahrscheinlichleit $1-\epsilon$ für die aktuell beste bekannte Aktion (Exploitation). Dadurch wird eine angemessenes Maß an Exploration des Zustandsraums gewährleistet.
 \newpage
-\subsection{Explodierende State und Action Spaces}
+\subsection{Explodierende State und Action Spaces} \label{explodingstateactionspaces}
 Beim Einsatz von Q-Learning in Multi-Agenten-Systemen führt die Kombination der Zustände und Aktionen aller Agenten zu einem exponentiell wachsenden Zustands- und Aktionsraum. Da Lernen im Kern als Suchprozess verstanden werden kann, wächst die Komplexität des Lernproblems mit der Anzahl beteiligter Variablen schnell an. Besonders im Multi-Agenten-Setting, in dem mehrere Agenten gleichzeitig agieren und interagieren, entstehen folgende Herausforderungen:
 \begin{itemize}
     \item \textbf{Zustandsraum-Explosion:} Der Zustandsraum wächst exponentiell mit der Anzahl der Agenten und beobachtbaren Merkmale der Umgebung.
@@ -85,9 +85,52 @@ Beim Einsatz von Q-Learning in Multi-Agenten-Systemen führt die Kombination der
 \end{itemize}
 Diese Phänomene können dazu führen, dass klassische Lernverfahren wie Q-Learning schnell an praktische Grenzen stoßen, etwa, wenn der Speicher- oder Zeitaufwand für die Pflege der Q-Tabelle unhandhabbar wird. Um dieses Problem zu vermeiden, ist eine geeignete Reduktion und Diskretisierung der Zustände und Aktionen notwendig. \cite{tuylsmultiagent}
 
+\newpage
 \subsection{Anwendung im Markt-Szenario}
-States, Actions, Rewards
-\dots
+Um das zuvor in \ref{explodingstateactionspaces} beschriebene Problem der Zustands- und Aktionsraumexplosion zu vermeiden, wurde das Markt-Szenario bewusst so modelliert, dass alle relevanten Elemente für tabellarisches Q-Learning diskret und handhabbar bleiben.
+\newline
+\newline
+\textbf{Zustandsraum}\newline
+Der Zustand eines Agenten setzt sich aus zwei diskretisierten Merkmalen zusammen:
+\begin{enumerate}
+    \item \textbf{Profitabilitätsniveau} - eine Einschätzung, ob der aktuelle Auftrag Verlust, Break-Even oder Gewinn bedeutet. Hierfür werden die individuell gezogenen Kosten mit dem aktuellen Auftragswert verglichen und in drei Kategorien eingeteilt:
+    \begin{enumerate}
+        \item[] 0: Verlust (Kosten $>$ Auftragswert)
+        \item[] 1: Break-Even (Kosten $=$ Auftragswert)
+        \item[] 2: Gewinn (Kosten $<$ Auftragswert)
+    \end{enumerate}
+    \item \textbf{Marktauslastung der Vorperiode} - eine Einschätzung der Wettbewerbssituation basierend auf der Anzahl der Maktangebote in der vorherigen Runde. Auch dieser Wert wird in drei diskrete Stufen eingeteilt:
+    \begin{enumerate}
+        \item[] 0: kein Angebot (leerer Markt)
+        \item[] 1: vereinzelte Angebote (weniger Angebote als Agenten)
+        \item[] 2: gesättigter Markt (genauso viele oder mehr Angebote als Agenten)
+    \end{enumerate}
+\end{enumerate}
+Die Kombination dieser beiden Merkmale ergibt einen Zustandsraum von $3 \times 3 = 9$ diskreten Zuständen pro Agent.
+\newline
+\newline
+\textbf{Aktionsraum}\newline
+Um den Anforderungen von tabellarischem Q-Learning gerecht zu werden, wurde der Aktionsraum als festes, endliches Set diskreter Entscheidungen modelliert. Der Agent kann in jeder Runde aus folgenden sechs Aktionen wählen:
+\begin{enumerate}
+    \item [] Aktion 0: Eigenen Auftrag auf dem Markt anbieten
+    \item [] Aktion 1: Auftrag selbst bearbeiten
+    \item [] Aktion 2-5: Auf fremde Aufträge bieten, wobei das Gebot einem festen vielfachen $F \in \{0.25, 0.5, 0.75, 1.0\}$ des Erlöses entspricht, den der Agent durch die Selbstbearbeitung erzielen würde.
+\end{enumerate}
+Die Entscheidung zum Bieten wurde auf vier diskrete Bietstufen beschränkt, um den kontinuierlichen Aktionsraum kompakt und lernbar zu halten. Damit ergibt sich der folgende diskrete Aktionsraum:
+\[
+A = \{0, 1, 2, 3, 4, 5\}
+\]
+\newline
+\textbf{Belohnungsstruktur}\newline
+Die Belohnung eines Agenten basiert auf dem ökonomischen Ergebnis seiner Aktion in der jeweiligen Runde. Im Erfolgsfall entspricht die Belohnung dem tatsächlichen Gewinn, also dem Erlös aus dem erhaltenen Auftrag abzüglich der Bearbeitungskosten. Wird ein eigener Auftrag selbst bearbeitet oder erfolgreich auf dem Markt verkauft bzw. ersteigert und anschließend bearbeitet, ergibt sich eine positive Belohnung, sofern Gewinn erzielt wird.
+\newline
+Um jedoch unrealistisches Verhalten zu verhindern, erhält der Agent eine explizite Strafbelohnung von -10, wenn er eine Bietaktion (Aktion 2-5) auswählt, obwohl in dieser Runde kein Gewinn dich Selbstbearbeitung hätte erzielen können. Auf diese Weise wird vermieden, dass Agenten systematisch Gebote abgeben, obwohl ihnen dafür keine
+wirtschaftliche Grundlage zur verfügung steht.
+\newline
+Nicht erfolgreiche Aktionen (z.B. kein Zuschlag bei Geboten oder keine Abnahme des angebotenen Aufztrags) führen zu einer Belohnung wie bei der Selbstbearbeitung.
+\newline
+Durch diese diskrete Modellierung ist es möglich, klassisches tabellarisches Q-Learning auch in einem dezentralen Multi-Agenten-Markt anzuwenden, ohne dass der Zustands- und Aktionsraum unhandhabbar groß wird.
+
 
 \section{Experiment}
 Was mache ich um die Forschungsfragen zu beantworten. Szenarien, Parameter, Metriken

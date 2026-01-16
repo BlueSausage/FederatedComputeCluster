@@ -38,13 +38,25 @@ niklas.schneider@haw-hamburg.de
 \end{abstract}
 
 \section{Einführung}
-Im Rahmen des Praktikum zu verteilten adaptiven Systemen wurde die Auftragsvergabe zwischen Rechenzentren (RZs) bisher zentral oder mit festen Regeln organisiert. In dieser Arbeit wird das Szenario zu einem dezentralen Markt erweitert, in dem mehrere RZs als autonome Agenten agieren. Sie können Aufträge auf dem Markt anbieten oder mit Erlösen aus der Selbstbearbeitung auf fremde Aufträge bieten. Dabei gibt es keinen Mindestpreis der Geboten werden muss. Die Zuteilung der Aufträge am Ende einer Runde wird zufällig nach dem Höchsten Geboten zugeordnet. Ziel ist es, mit Hilfe von Q-Learning zu untersuchen, wie sich Strategien, Gewinne und die Auftragsverteilung im Multi-Agenten-Markt entwickeln, insbesondere unter Berücksichtigung verschiedener Kostenmodelle.
+Im Rahmen des Praktikum zu verteilten adaptiven Systemen wurde die Auftragsvergabe zwischen Rechenzentren (RZs) bisher zentral oder regelbasiert organisiert. In dieser Arbeit wird das Szenario zu einem dezentralen Markt weiterentwickelt, in dem mehrere RZs als autonome, lernende Agenten agieren. Sie können Aufträge selbstbearbeiten, auf dem Markt anbieten oder mit Erlösen aus der Selbstbearbeitung auf fremde Aufträge bieten. Ziel ist es, mit Hilfe von Q-Learning zu untersuchen, wie sich Strategien, Gewinne und die Verteilung der Aufträge unter realistischen Marktbedingungen entwickeln.
 
 \subsection{Preisgestaltung}
-\dots
+Sowohl die Kosten der RZs als auch der Auftragswert für Aufträge werden in jeder Runde dynamisch generiert, um ein realistisches, variierendes Marktumfeld zu simulieren.
+\newline
+Jedes RZ zieht zu beginn jeder Runde seine individuellen Bearbeitungskosten aus einer Normalverteilung $N(\mu_{cost}, \sigma_{cost})$, mit einem Mittelwert $\mu_{cost}$ von 5 und einer Standardabweichung $\sigma_{cost}$ von 2. Die gezogenen Werte werden auf positive ganze Zahlen abgerundet und auf einen Wertebreich von 1 bis 10 begrenzt. Dadurch wird das einteilen der Kosten in diskrete Kategorien erleichtert.
+\newline
+Der Preis, der in einer Runde für alle Aufträge gleichermaßen gilt, wird als der Mittelwert der gezogenen Kosten aller RZs berechnet. Dieser Wert wird auf eine positive ganze Zahl aufgerundet, sodass der Auftragswert immer so hoch wie der Durchschnitt der Bearbeitungskosten aller RZs ist. Dies stellt sicher, dass es für die RZs grundsätzlich möglich ist, durch Selbstbearbeitung Gewinne zu erzielen, während gleichzeitig ein Wettbewerbsdruck durch die variierenden Kosten entsteht.
+\newline
+Durch die Kombination aus zufälligen, eingegrenzten Kosten und rundenweise neu berechnetem Preis kann es in einzelnen Runden zu Verlusten bei der Selbstbearbeitung kommen. RZs mit überdurchschnittlich Kosten können dann versuchen, ihren Auftrag über den Markt zu verkaufen. Auf diese Weise entsteht ein lernrelevantes Spannungsfeld zwischen Selbstbearbeitung, Outsourcing und Marktteilnahme.
 
 \subsection{Auktionsverfahren}
-\dots
+In dem betrachteten Marktszenario haben RZs in jeder Runde drei Handlungs-möglichkeiten. Sie können ihren Auftrag selbst bearbeiten, ihn auf dem Markt zum Verkauf anbieten oder mit dem Erlös aus der Selbstbearbeitung ein Gebot für einen weiteren Auftrag abgeben.
+\newline
+Wird ein Auftrag auf dem Markt angeboten, so erfolgt dies ohne eines Mindestgebots. Alle angeboten Aufträge werden gleich behandelt und ohne individuelle Preisuntergrenze gelistet. Die RZs, die ein Gebot abgeben möchten, wählen dazu einen Betrag aus, den sie bereit sind, für die Bearbeitung eines fremden Auftrags zu zahlen. Die Höhe des Gebots orientiert sich an dem Gewinn aus der Selbstbearbeitung in der laufenden Runde, wobei feste Gebotsfaktoren verwendet werden (vgl Abschnitt \ref{actionspace} Aktionsraum).
+\newline
+Nachdem alle RZs ihre Entscheidung getroffen haben, erfolgt das Matching der Marktangebote. Die auf dem Markt gelisteten Aufträge werden zufällig einem der Bieter zugewiesen, wobei in absteigender Reihenfolge der Gebote vorgegangen wird. Jedes Angebot kann dabei maximal einmal vergeben werden. Es ist somit möglich, dass RZs, die ihren Auftrag auf dem Markt anbieten, keinen Käufer finden. Ebenso konnen RZs, die ein Gebot abgeben, leer ausgehen, wenn kein passender Auftrag mehr verfügbar ist.
+\newline
+Dieses einfache, nicht-kooperative Marktverfahren erschafft einen Auktionsmechanismus mit begrenztem Wettbewerb und Unsicherheit, der des den Agenten erlaubt, durch wiederholte Teilnahme und Lernen über Q-Learning geeignete Strategien zu entwickeln.
 
 \section{Forschungsfrage}
 Im Zentrum der Arbeit steht die Frage, wie sich das Verhalten und die Ergebnisse im beschriebenen Marktszenario entwickeln, wenn mehrere RZs als autonome Agenten mithilfe von Q-Learning agieren. Dabei werden insbesondere die Stabilität der Strategien, die Herausbildung von Gewinnern und die Verteilung der Aufträge analysiert.
@@ -53,14 +65,12 @@ Daraus ergeben sich die folgenden Forschungsfragen:
 \begin{enumerate}
     \item Entwickeln Agenten im Multi-Agenten-Markt für Auftragsvergabe durch wiederholte Teilnahme stabile und vorteilhafte Strategien?
     \item Verteilen sich Gewinne und Aufträge langfristig gleichmäßig, oder setzen sich einzelne Agenten als Gewinner durch?
-    \item Wie unterscheiden sich Gewinne, Strategien und Systemstabilität bei verschiedenen Auktionsverfahren (First-Price, Vickrey) im Multi-Agenten-Markt für Auftragsvergabe?
+    \item \dots
 \end{enumerate}
 
-Um diese Fragen zu beantwortung wird eine simulationsbasierte Analyse durchgeführt. Dazu wird eine Multi-Agenten-Simulation entwickelt, in der mehrere RZs als autonome Agenten mithilfe von Q-Learning im Markt agieren. Die Agenten verfügen dabei jeweils nur über Informationen zu ihren eigenen Kosten und zur Gebühr für die Bearbeitung eines Auftrags. Untersucht werden sowohl Szenarien mit festen Kosten je Agent als auch mit dynamischen, pro Runde neu gezogenen Kosten. Dieses Vorgehen ermöglicht es, das Zusammenspiel von individuellen Lernprozessen, Strategieentwicklung und Systemdynamik im dezentralen Markt direkt zu beobachten. Analytische Lösungen sind bei komplexem Agentenverhalten und Lernalgorithmen oft nicht praktikabel. Daher bietet die simulationsbasierte Auswertung eine realistische Möglichkeit, die Forschungsfragen systematisch zu untersuchen. Durch Variation von Parametern wie Kostenstruktur oder Agentenzahl kann zudem die Robustheit der Ergebnisse überprüft werden.
+Um diese Fragen zu beantwortung wird eine simulationsbasierte Analyse durchgeführt. Dazu wird eine Multi-Agenten-Simulation entwickelt, in der mehrere RZs als autonome Agenten mithilfe von Q-Learning im Markt agieren. Die Agenten verfügen dabei jeweils nur über Informationen zu ihren eigenen Kosten und zur Gebühr für die Bearbeitung eines Auftrags, sowie die Marktauslastund der letzten Runde. Untersucht werden sowohl Szenarien mit festen Kosten je Agent als auch mit dynamischen, pro Runde neu gezogenen Kosten. Dieses Vorgehen ermöglicht es, das Zusammenspiel von individuellen Lernprozessen, Strategieentwicklung und Systemdynamik im dezentralen Markt direkt zu beobachten. Analytische Lösungen sind bei komplexem Agentenverhalten und Lernalgorithmen oft nicht praktikabel. Daher bietet die simulationsbasierte Auswertung eine realistische Möglichkeit, die Forschungsfragen systematisch zu untersuchen.
 
-\newpage
 \section{Methodik/Grundlagen}
-Erklären von Q-Learning. Erklären wie der explodierende Aktions- und Zustandsraum behandelt wird. Wie Q-Learning angewendet wird in dem Szenario\dots
 \subsection{Q-Learning}
 Q-Learning ist ein modellfreies Verfahren des Reinforcement Learning, das darauf abzielt, eine optimale Strategie (Policy) $\pi^*$ für einen Agenten zu erlernen. Ziel ist es, für jeden Zustand $s$ eine Aktion $a$ zu finden, die langfristig die höchste kumulierte Belohnung verspricht. Dabei erhält der Agent bei der Ausführung von Aktion $a$ in Zustand $s$ eine direkte Belohnung $r(s, a)$ und lernt aus der Übergangsdynamik der Umgebung.
 Zentral ist die sogenannte Q-Funktion $Q(s, a)$ die den erwarteten Nutzen angibt, wenn der Agent in Zustand $s$ die Aktion $a$ wählt und danach der optimalen Policy $\pi^*$ folgt. Die optimale Q-Funktion $Q^*$ erfüllt die Bellmann-Gleichung:
@@ -75,7 +85,7 @@ Hierbei steht $\alpha$ für die Lernrate, die bestimmt, wie stark neue Informati
 \newline
 \newline
 Um sowohl neue Strategien zu entdecken als auch bekannte gute Strategien auszunutzen, wird häufig eine $\epsilon$-greedy-Policy verwendet. Mit Wahrscheinlichkeit $\epsilon$ wählt der Agent eine zufällige Aktion (Exploration), andernfalls entscheidet sich der Agent mit der Wahrscheinlichleit $1-\epsilon$ für die aktuell beste bekannte Aktion (Exploitation). Dadurch wird eine angemessenes Maß an Exploration des Zustandsraums gewährleistet.
-\newpage
+
 \subsection{Explodierende State und Action Spaces} \label{explodingstateactionspaces}
 Beim Einsatz von Q-Learning in Multi-Agenten-Systemen führt die Kombination der Zustände und Aktionen aller Agenten zu einem exponentiell wachsenden Zustands- und Aktionsraum. Da Lernen im Kern als Suchprozess verstanden werden kann, wächst die Komplexität des Lernproblems mit der Anzahl beteiligter Variablen schnell an. Besonders im Multi-Agenten-Setting, in dem mehrere Agenten gleichzeitig agieren und interagieren, entstehen folgende Herausforderungen:
 \begin{itemize}
@@ -85,7 +95,6 @@ Beim Einsatz von Q-Learning in Multi-Agenten-Systemen führt die Kombination der
 \end{itemize}
 Diese Phänomene können dazu führen, dass klassische Lernverfahren wie Q-Learning schnell an praktische Grenzen stoßen, etwa, wenn der Speicher- oder Zeitaufwand für die Pflege der Q-Tabelle unhandhabbar wird. Um dieses Problem zu vermeiden, ist eine geeignete Reduktion und Diskretisierung der Zustände und Aktionen notwendig. \cite{tuylsmultiagent}
 
-\newpage
 \subsection{Anwendung im Markt-Szenario}
 Um das zuvor in \ref{explodingstateactionspaces} beschriebene Problem der Zustands- und Aktionsraumexplosion zu vermeiden, wurde das Markt-Szenario bewusst so modelliert, dass alle relevanten Elemente für tabellarisches Q-Learning diskret und handhabbar bleiben.
 \newline
@@ -109,7 +118,7 @@ Der Zustand eines Agenten setzt sich aus zwei diskretisierten Merkmalen zusammen
 Die Kombination dieser beiden Merkmale ergibt einen Zustandsraum von $3 \times 3 = 9$ diskreten Zuständen pro Agent.
 \newline
 \newline
-\textbf{Aktionsraum}\newline
+\textbf{Aktionsraum} \label{actionspace}\newline
 Um den Anforderungen von tabellarischem Q-Learning gerecht zu werden, wurde der Aktionsraum als festes, endliches Set diskreter Entscheidungen modelliert. Der Agent kann in jeder Runde aus folgenden sechs Aktionen wählen:
 \begin{enumerate}
     \item [] Aktion 0: Eigenen Auftrag auf dem Markt anbieten

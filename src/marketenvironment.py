@@ -65,8 +65,10 @@ class RZ():
 
 
 class MarketEnvironment():
-    def __init__(self, num_agents=6, costs=5, sigma=2):
+    def __init__(self, num_agents, costs, sigma):
         self.num_agents = num_agents
+        costs = self._expand_param(costs, num_agents)
+        sigma = self._expand_param(sigma, num_agents)
 
         self.state_space = 9
         self.action_space = 6
@@ -82,6 +84,15 @@ class MarketEnvironment():
         self.price = self.determine_price()
 
         self.observations = {}
+
+    def _expand_param(self, param, num_agents):
+        if np.isscalar(param):
+            return np.full(num_agents, param)
+
+        param = np.asarray(param)
+        if len(param) != num_agents:
+            raise ValueError("Wrong length")
+        return param
 
     def reset(self):
         self.jobs = []
@@ -191,7 +202,7 @@ class MarketEnvironment():
         for i in range(num_rz):
             name = f'RZ{i+1}'
             rz = RZ(
-                name=name, mean_cost=costs, sigma=sigma,
+                name=name, mean_cost=costs[i], sigma=sigma[i],
                 state_space=self.state_space, action_space=self.action_space
             )
             rz_list[name] = rz

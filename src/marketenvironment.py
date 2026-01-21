@@ -124,18 +124,22 @@ class MarketEnvironment():
         ]
         current = {}
         rewards = {}
-        # print(f"======Price: {self.price}========")
+        current['price'] = self.price
         for agent_name, action in actions.items():
             earnings = self.price - self.agents[agent_name].cost
             rewards[agent_name] = 0
-            current[agent_name] = (
-                f"Agent {agent_name} with state "
-                f"{self.observations[agent_name]} "
-                f"{state_names[self.observations[agent_name][0] * 3 + self.observations[agent_name][1]]} "
-                f"chooses {action} ({action_names[action]}) "
-                f"with cost {self.agents[agent_name].cost} "
-                f"and possible earnings {earnings} "
-            )
+            obs = self.observations[agent_name]
+            state_idx = obs[0] * 3 + obs[1]
+
+            current[agent_name] = {
+                'obs': obs,
+                'state': state_names[state_idx],
+                'action': action,
+                'action_name': action_names[action],
+                'cost': self.agents[agent_name].cost,
+                'possible_earnings': earnings
+            }
+
             # list job
             if action == 0:
                 self.list_job(agent_name)
@@ -158,9 +162,6 @@ class MarketEnvironment():
         self.market_load_prev = len(self.jobs)
         # determine winners
         winners = self.determine_winner()
-        # print(f"Jobs listed: {self.jobs}")
-        # print(f"Placed bids: {self.bids}")
-        # print(f"Winners: {[bid.bidder for bid in winners]}")
         for bid in winners:
             # calculate rewards of bidder
             rewards[bid.bidder] += (
@@ -172,11 +173,11 @@ class MarketEnvironment():
             self.jobs.remove(winner)
             self.bids.remove(bid)
         else:
-            # if there are bidders without succes, there reward will be self processing
-            # print(f"Left over jobs: {self.jobs}")
+            # if there are bidders without succes,
+            # there reward will be self processing
             for job in self.jobs:
                 rewards[job] += self.price - self.agents[job].cost
-            # print(f"Left over bids: {self.bids}")
+
             for bid in self.bids:
                 rewards[bid.bidder] = self.price - self.agents[bid.bidder].cost
 
@@ -185,9 +186,9 @@ class MarketEnvironment():
         self.bids = []
         # generate new costs, price
         for agent in self.agents.values():
-            current[agent.name] += f"-> actual reward: {rewards[agent.name]}"
+            current[agent.name]['actual_reward'] = rewards[agent.name]
             agent.cost = agent.draw_cost()
-        # print("\n".join(current.values()))
+
         self.price = self.determine_price()
         for agent in self.agents.values():
             self.observations[agent.name] = (

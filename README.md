@@ -22,7 +22,7 @@ The agent’s production cost is sampled from a clipped normal distribution (e.g
 This discretization preserves the essential economic signal—how cost-competitive an agent currently is—while keeping the state space compact.
 
 ### 2. Previous market load
-
+Rework!!!!
 Since all agents act simultaneously in a single phase, the current market does not yet exist at decision time. Therefore, the agent relies on market activity from the previous round as an indicator of supply and competition.
 
 The previous number of listings is discretized as:
@@ -82,3 +82,61 @@ These discrete bid levels ensure that agents can learn stable bidding strategies
     - mittlerer Reward für (state, action) sollte “logisch” aussehen:
         - loss + self_process sollte eher negativ/klein sein
         - loss + list sollte besser sein, wenn genügend Bids existieren
+
+
+## 🔁 α (Alpha) – Lernrate
+
+**Frage, die α beantwortet:**
+> *Wie stark vertraue ich neuen Erfahrungen gegenüber altem Wissen?*
+
+### Technisch
+α bestimmt, **wie groß der Schritt** beim Update der Q-Werte ist:
+neues Q = altes Q + α · (TD-Fehler)
+
+### Intuition
+- **Hohes α (z. B. 0.7 – 1.0)**
+  - neue Erfahrungen zählen stark
+  - Q-Werte ändern sich schnell
+  - ❗ kann instabil / „zappelig“ werden
+
+- **Niedriges α (z. B. 0.05 – 0.2)**
+  - Lernen ist langsam, aber stabil
+  - Agent „vergisst“ schlechte frühe Erfahrungen nur sehr träge
+
+### In *deinem* Szenario
+- Kosten und Marktzustand sind **stochastisch**
+- → zu hohes α reagiert über auf Zufallsschwankungen
+- → zu niedriges α braucht extrem viele Episoden
+
+👉 **0.3 – 0.6** ist hier ein sehr sinnvoller Bereich
+
+---
+
+## 🔮 γ (Gamma) – Diskontfaktor
+
+**Frage, die γ beantwortet:**
+> *Wie wichtig ist mir die Zukunft im Vergleich zum Jetzt?*
+
+### Technisch
+γ gewichtet den maximalen zukünftigen Q-Wert:
+reward + γ · max(Q(next_state))
+
+
+### Intuition
+- **γ ≈ 0**
+  - nur **sofortiger Gewinn** zählt
+  - Agent denkt kurzfristig
+
+- **γ ≈ 1**
+  - langfristige Folgen sehr wichtig
+  - Agent ist strategisch, aber:
+    - braucht stabile Umgebung
+    - lernt langsamer
+
+### In *deinem* Marktmodell
+- Zustände ändern sich **jede Runde komplett** (neue Kosten, neuer Preis)
+- Kein echtes „langes Planen“ über viele Schritte
+- → Zukunft ist **nur schwach korreliert** mit der Gegenwart
+
+👉 Deshalb ist dein **γ = 0.1** sehr gut gewählt
+Oft sogar besser als 0.9 in solchen Markt-/Auktionssettings

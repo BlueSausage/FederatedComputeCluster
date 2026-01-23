@@ -1,18 +1,21 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
+import numpy as np
+
+from matplotlib.patches import Rectangle
 
 
 def plot_q_tables(agent):
     states = [
-        "(loss;empty_market)",
-        "(loss;some_jobs)",
-        "(loss;full_market)",
-        "(break_even;empty_market)",
-        "(break_even;some_jobs)",
-        "(break_even;full_market)",
-        "(profit;empty_market)",
-        "(profit;some_jobs)",
-        "(profit;full_market)"
+        "(loss;low_competition)",
+        "(loss;medium_competition)",
+        "(loss;high_competition)",
+        "(break_even;low_competition)",
+        "(break_even;medium_competition)",
+        "(break_even;high_competition)",
+        "(profit;low_competition)",
+        "(profit;medium_competition)",
+        "(profit;high_competition)"
     ]
 
     actions = ["list_job", "self_processing", "bid_0.25",
@@ -27,6 +30,17 @@ def plot_q_tables(agent):
         center=0,
         cbar=True
     )
+
+    best_actions = np.argmax(agent.q_table, axis=1)
+    for row, col in enumerate(best_actions):
+        if agent.q_table[row][col] > 0:
+            rect = Rectangle(
+                (col, row), 1, 1,
+                fill=False,
+                edgecolor="red",
+                linewidth=2.5
+            )
+            ax.add_patch(rect)
 
     ax.set_xticklabels(actions, rotation=45)
     ax.set_yticklabels(states, rotation=0)
@@ -91,7 +105,13 @@ def plot_reward_for(agent_name, rewards, window_size=100):
             y_ma.append(sum(y[i-window_size+1:i+1]) / window_size)
 
     plt.plot(steps, y, label=agent_name, color="blue", linewidth=2)
-    plt.plot(steps, y_ma, label=f"{agent_name} (MA)", color="black", linestyle="--", linewidth=1)
+    plt.plot(
+        steps, y_ma,
+        label=f"{agent_name} (MA)",
+        color="black",
+        linestyle="--",
+        linewidth=1
+    )
 
     plt.xlabel("Step")
     plt.ylabel("Reward")

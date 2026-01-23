@@ -15,7 +15,7 @@ class Bid():
 class RZ():
     def __init__(
         self, name, mean_cost, sigma, state_space, action_space,
-        alpha=0.1, gamma=0.95, epsilon=0.9, learning=True
+        alpha=0.4, gamma=0.1, epsilon=0.9, learning=True
     ):
         self.name = name
         self.mean_cost = mean_cost
@@ -28,6 +28,8 @@ class RZ():
         self.gamma = gamma
         self.epsilon = epsilon
         self.learning = learning
+
+        self.min_epsilon = 0.05
 
         self.cost = self.draw_cost()
 
@@ -49,7 +51,7 @@ class RZ():
             action = random.randint(0, self.action_space - 1)
         else:
             action = np.argmax(self.q_table[state_id])
-        self.epsilon *= 0.999  # decay epsilon
+        self.epsilon = max(self.min_epsilon, self.epsilon * 0.999)
         return action
 
     def learn(self, state, action, reward, next_state):
@@ -83,6 +85,11 @@ class MarketEnvironment():
         )
         self.price = self.determine_price()
 
+        self.market_price_history = []
+        self.trade_count_history = []
+        self.pressure_history = []
+        self.price_window = 10
+
         self.observations = {}
 
     def _expand_param(self, param, num_agents):
@@ -112,19 +119,19 @@ class MarketEnvironment():
         action_names = ["list_job", "self_processing", "bid_0.25",
                         "bid_0.5", "bid_0.75", "bid_1.0"]
         state_names = [
-            "(loss;empty_market)",
-            "(loss;some_jobs)",
-            "(loss;full_market)",
-            "(break_even;empty_market)",
-            "(break_even;some_jobs)",
-            "(break_even;full_market)",
-            "(profit;empty_market)",
-            "(profit;some_jobs)",
-            "(profit;full_market)"
+            "(loss;low_competition)",
+            "(loss;medium_competition)",
+            "(loss;high_competition)",
+            "(break_even;low_competition)",
+            "(break_even;medium_competition)",
+            "(break_even;high_competition)",
+            "(profit;low_competition)",
+            "(profit;medium_competition)",
+            "(profit;high_competition)"
         ]
         current = {}
         rewards = {}
-        current['price'] = self.price
+        current["price"] = self.price
         for agent_name, action in actions.items():
             earnings = self.price - self.agents[agent_name].cost
             rewards[agent_name] = 0
@@ -132,16 +139,19 @@ class MarketEnvironment():
             state_idx = obs[0] * 3 + obs[1]
 
             current[agent_name] = {
-                'obs': obs,
-                'state': state_names[state_idx],
-                'action': action,
-                'action_name': action_names[action],
-                'cost': self.agents[agent_name].cost,
-                'possible_earnings': earnings
+                "obs": obs,
+                "state": state_names[state_idx],
+                "action": action,
+                "action_name": action_names[action],
+                "cost": self.agents[agent_name].cost,
+                "possible_earnings": earnings
             }
 
             # list job
             if action == 0:
+                if earnings <= 0:
+                    # small reward for listing unprofitable job
+                    rewards[agent_name] += 5
                 self.list_job(agent_name)
             # self processing
             if action == 1:
@@ -157,11 +167,27 @@ class MarketEnvironment():
                 if action == 5:
                     self.place_bid(agent_name, earnings * 1.0)
             elif earnings <= 0 and action >= 2:
-                rewards[agent_name] -= 10  # earnings * 2  # loss incurred
+                # penalty for bidding with no possible earnings
+                rewards[agent_name] -= 10
 
         self.market_load_prev = len(self.jobs)
         # determine winners
         winners = self.determine_winner()
+
+        round_winning_bids = [bid.bid for bid in winners]
+        round_avg_bid = statistics.mean(round_winning_bids) if round_winning_bids else 0.0
+        trade_count = len(winners)
+
+        self.market_price_history.append(round_avg_bid)
+        self.trade_count_history.append(trade_count)
+
+        max_trades = max(1, self.num_agents)
+        round_pressure = round_avg_bid * (trade_count / max_trades)  # Price x Volume
+
+        self.pressure_history.append(round_pressure)
+        if len(self.market_price_history) > self.price_window:
+            self.pressure_history.pop(0)
+
         for bid in winners:
             # calculate rewards of bidder
             rewards[bid.bidder] += (
@@ -172,21 +198,25 @@ class MarketEnvironment():
             rewards[winner] += bid.bid
             self.jobs.remove(winner)
             self.bids.remove(bid)
+            current[bid.bidder]["won_bid"] = bid.bid
+            current[winner]["received_bid"] = bid.bid
         else:
             # if there are bidders without succes,
             # there reward will be self processing
             for job in self.jobs:
                 rewards[job] += self.price - self.agents[job].cost
+                current[job]["received_bid"] = 0
 
             for bid in self.bids:
                 rewards[bid.bidder] = self.price - self.agents[bid.bidder].cost
+                current[bid.bidder]["won_bid"] = 0
 
         # clear jobs and bids
         self.jobs = []
         self.bids = []
         # generate new costs, price
         for agent in self.agents.values():
-            current[agent.name]['actual_reward'] = rewards[agent.name]
+            current[agent.name]["actual_reward"] = rewards[agent.name]
             agent.cost = agent.draw_cost()
 
         self.price = self.determine_price()
@@ -195,13 +225,14 @@ class MarketEnvironment():
                 self.get_profitability_level(agent.cost),
                 self.get_market_level()
             )
-        current['social_welfare'] = sum(rewards.values())
+        current["social_welfare"] = sum(rewards.values())
+        current["market_situation"] = self.market_price_history.copy()
         return self.observations.copy(), rewards, False, current
 
     def generate_rz_list(self, num_rz, costs, sigma):
         rz_list = {}
         for i in range(num_rz):
-            name = f'RZ{i+1}'
+            name = f"RZ{i+1}"
             rz = RZ(
                 name=name, mean_cost=costs[i], sigma=sigma[i],
                 state_space=self.state_space, action_space=self.action_space
@@ -224,11 +255,20 @@ class MarketEnvironment():
         return 2
 
     def get_market_level(self):
-        if self.market_load_prev == 0:
-            return 0
-        if self.market_load_prev >= self.num_agents // 2:
-            return 2
-        return 1
+        if len(self.market_price_history) < 3:
+            return 1  # medium competition by default
+
+        avg_pressure = statistics.mean(self.pressure_history)
+
+        q33 = np.quantile(self.pressure_history, 0.33)
+        q66 = np.quantile(self.pressure_history, 0.66)
+
+        if avg_pressure < q33:
+            return 0  # low competition
+        if avg_pressure < q66:
+            return 1  # medium competition
+        else:
+            return 2  # high competition
 
     def list_job(self, job):
         self.jobs.append(job)

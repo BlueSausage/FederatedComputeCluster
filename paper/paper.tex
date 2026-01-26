@@ -65,11 +65,6 @@ Daraus ergeben sich die folgenden Forschungsfragen:
 \begin{enumerate}
     \item Entwickeln Agenten im Multi-Agenten-Markt für Auftragsvergabe durch wiederholte Teilnahme stabile und vorteilhafte Strategien?
     \item Verteilen sich Gewinne und Aufträge langfristig gleichmäßig, oder setzen sich einzelne Agenten als Gewinner durch?
-    \item Wie beeinflusst die Kostenstruktur (fix vs. dynamisch) das Lernverhalten der Agenten und die Stabilität sowie Fairness des Marktsystems
-\end{enumerate}
-Evtll. können weitere Fragen ergänzt werden, je nach Fokus der Arbeit.
-\begin{enumerate}
-    \item Führt eigennütziges, lernendes Verhalten autonomer RZs langfristig zu stabilen Strategien – und wie wirkt sich das auf Marktverteilung und Social Welfare aus?
 \end{enumerate}
 
 Um diese Fragen zu beantwortung wird eine simulationsbasierte Analyse durchgeführt. Dazu wird eine Multi-Agenten-Simulation entwickelt, in der mehrere RZs als autonome Agenten mithilfe von Q-Learning im Markt agieren. Die Agenten verfügen dabei jeweils nur über Informationen zu ihren eigenen Kosten und zur Gebühr für die Bearbeitung eines Auftrags, sowie die Marktauslastung der letzten Runde. Untersucht werden sowohl Szenarien mit festen Kosten je Agent als auch mit dynamischen, pro Runde neu gezogenen Kosten. Dieses Vorgehen ermöglicht es, das Zusammenspiel von individuellen Lernprozessen, Strategieentwicklung und Systemdynamik im dezentralen Markt direkt zu beobachten. Analytische Lösungen sind bei komplexem Agentenverhalten und Lernalgorithmen oft nicht praktikabel. Daher bietet die simulationsbasierte Auswertung eine realistische Möglichkeit, die Forschungsfragen systematisch zu untersuchen.
@@ -162,6 +157,14 @@ Durch diese diskrete Modellierung ist es möglich, klassisches tabellarisches Q-
 \end{enumerate}
 
 \section{Fazit und Ausblick}
+Nur als Ausblick (nicht als Kritik):
+\begin{itemize}
+    \item Selbstverarbeitung leicht bestrafen
+    \item Kosten persistent machen (nicht jede Runde neu)
+    \item Jobs knapper machen
+    \item Bieten verpflichtend (kein Opt-out)
+    \item Preis träger oder exogen
+\end{itemize}
 \dots
 
 % ****************************************************************************

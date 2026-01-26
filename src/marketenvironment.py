@@ -9,7 +9,7 @@ from dataclasses import dataclass
 @dataclass
 class Bid():
     bidder: str
-    bid: int
+    bid: float
 
 
 class RZ():
@@ -29,7 +29,7 @@ class RZ():
         self.epsilon = epsilon
         self.learning = learning
 
-        self.min_epsilon = 0.05
+        self.min_epsilon = 0.0
 
         self.cost = self.draw_cost()
 
@@ -187,6 +187,9 @@ class MarketEnvironment():
         if len(self.pressure_history) > self.price_window:
             self.pressure_history.pop(0)
 
+        current["total_bids"] = sum(round_winning_bids)
+        current["round_avg_bid"] = round_avg_bid
+
         for bid in winners:
             # calculate rewards of bidder
             rewards[bid.bidder] += (
@@ -209,6 +212,9 @@ class MarketEnvironment():
             for bid in self.bids:
                 rewards[bid.bidder] = self.price - self.agents[bid.bidder].cost
                 current[bid.bidder]["won_bid"] = 0
+
+        # convert rewards to float
+        rewards = {k: float(v) for k, v in rewards.items()}
 
         # clear jobs and bids
         self.jobs = []
@@ -233,8 +239,11 @@ class MarketEnvironment():
         for i in range(num_rz):
             name = f"RZ{i+1}"
             rz = RZ(
-                name=name, mean_cost=costs[i], sigma=sigma[i],
-                state_space=self.state_space, action_space=self.action_space
+                name=name,
+                mean_cost=costs[i],
+                sigma=sigma[i],
+                state_space=self.state_space,
+                action_space=self.action_space
             )
             rz_list[name] = rz
         return rz_list
@@ -255,7 +264,8 @@ class MarketEnvironment():
 
     def get_market_level(self):
         if len(self.pressure_history) < 3:
-            return 1  # medium competition by default
+            # medium competition by default for the first three rounds
+            return 1
 
         avg_pressure = statistics.mean(self.pressure_history)
 

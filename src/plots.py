@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
+import statistics
 
 from matplotlib.patches import Rectangle
 
@@ -47,22 +48,50 @@ def plot_q_tables(agent):
     plt.show()
 
 
-def plot_rewards(rewards):
+def plot_q_convergance(q_snapshots, snap_steps):
+    sns.set_style("whitegrid")
+
+    deltas = {}
+
+    for name, snaps in q_snapshots.items():
+        d = []
+        for i in range(1, len(snaps)):
+            diff = snaps[i] - snaps[i-1]
+            d.append(np.linalg.norm(diff))  # 
+        deltas[name] = np.array(d, dtype=float)
+
+    x = snap_steps[1:]
+
+    plt.figure(figsize=(12, 6))
+    palette = sns.color_palette("tab10", n_colors=len(deltas))
+
+    for (name, d), color in zip(deltas.items(), palette):
+        plt.plot(x, d, label=name, color=color, linewidth=2)
+
+    plt.xlabel("Steps")
+    plt.ylabel("L2 change of Q-Table")
+    plt.title("Q-table changes over time")
+    plt.legend(title="Agents", loc="upper left")
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_rewards(round_info):
     sns.set_style("whitegrid")
     plt.figure(figsize=(12, 6))
 
-    steps = sorted(rewards.keys())
+    steps = sorted(round_info.keys())
 
-    inner_dict = rewards[steps[0]]
+    inner_dict = round_info[steps[0]]
     rz_keys = [key for key in inner_dict.keys() if key.startswith("RZ")]
 
     palette = sns.color_palette("tab10", n_colors=len(rz_keys))
 
     for rz, color in zip(rz_keys, palette):
-        y = [rewards[s][rz] for s in steps]
+        y = [round_info[s][rz] for s in steps]
         plt.plot(steps, y, label=rz, color=color, linewidth=2)
 
-    mean = [rewards[step]["mean_reward"] for step in steps]
+    mean = [round_info[step]["mean_reward"] for step in steps]
     plt.plot(
         steps, mean,
         label="mean_reward",
@@ -71,7 +100,7 @@ def plot_rewards(rewards):
         linewidth=3
     )
 
-    social_welfare = [rewards[step]["social_welfare"] for step in steps]
+    social_welfare = [round_info[step]["social_welfare"] for step in steps]
     plt.plot(
         steps, social_welfare,
         label="social_welfare",
@@ -83,18 +112,18 @@ def plot_rewards(rewards):
     plt.xlabel("Step")
     plt.ylabel("Reward")
     plt.title("Agent Rewards Over Time")
-    plt.legend()
+    plt.legend(loc="upper left")
     plt.tight_layout()
     plt.show()
 
 
-def plot_reward_for(agent_name, rewards, window_size=100):
+def plot_reward_for(agent_name, round_info, window_size=100):
     sns.set_style("whitegrid")
     plt.figure(figsize=(12, 6))
 
-    steps = sorted(rewards.keys())
+    steps = sorted(round_info.keys())
 
-    y = [rewards[s][agent_name] for s in steps]
+    y = [round_info[s][agent_name] for s in steps]
 
     # calculate moving average
     y_ma = []
@@ -104,7 +133,13 @@ def plot_reward_for(agent_name, rewards, window_size=100):
         else:
             y_ma.append(sum(y[i-window_size+1:i+1]) / window_size)
 
-    plt.plot(steps, y, label=agent_name, color="blue", linewidth=2)
+    plt.plot(
+        steps, y,
+        label=agent_name,
+        color="blue",
+        linewidth=2
+    )
+
     plt.plot(
         steps, y_ma,
         label=f"{agent_name} (MA)",
@@ -116,6 +151,70 @@ def plot_reward_for(agent_name, rewards, window_size=100):
     plt.xlabel("Step")
     plt.ylabel("Reward")
     plt.title(f"Reward Over Time for {agent_name}")
-    plt.legend()
+    plt.legend(loc="upper left")
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_cumulative_rewards(round_info):
+    sns.set_style("whitegrid")
+
+    steps = sorted(round_info.keys())
+    rz_keys = [k for k in round_info[steps[0]].keys() if k.startswith("RZ")]
+    palette = sns.color_palette("tab10", n_colors=len(rz_keys))
+
+    final_sum = {}
+
+    for rz, _ in zip(rz_keys, palette):
+        y = [float(round_info[s][rz]) for s in steps]
+        y_cum = np.cumsum(y)
+        final_sum[rz] = y_cum[-1].item()
+
+    plt.figure(figsize=(12, 6))
+    agents = list(final_sum.keys())
+    values = list(final_sum.values())
+
+    plt.bar(agents, values, color=palette)
+
+    plt.ylabel("Final Cumulative Reward")
+    plt.title("Final Cumulative Rewards per Agent")
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_price(round_info, window_size=100):
+    sns.set_style("whitegrid")
+    plt.figure(figsize=(12, 6))
+
+    steps = sorted(round_info.keys())
+
+    price = [v["price"] for v in round_info.values()]
+    price_ma = []
+    for i in range(len(price)):
+        if i < window_size:
+            mean_price = statistics.mean(price[:i+1])
+        else:
+            mean_price = statistics.mean(price[i-window_size+1:i+1])
+        price_ma.append(mean_price)
+
+    plt.plot(
+        steps, price,
+        label="Price",
+        color="green",
+        linewidth=2
+    )
+
+    plt.plot(
+        steps, price_ma,
+        label="Price (MA)",
+        color="black",
+        linestyle="--",
+        linewidth=1
+    )
+
+    plt.xlabel("Step")
+    plt.ylabel("Price")
+    plt.title("Price Over Time")
+    plt.legend(loc="upper left")
     plt.tight_layout()
     plt.show()

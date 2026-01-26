@@ -1,35 +1,17 @@
-from pprint import pprint
-import matplotlib.pyplot as plt
-import seaborn as sns
+from marketenvironment import MarketEnvironment
+import statistics
 
 
-def plot_q_tables(agent):
-    states = [
-        "(loss;empty_market)",
-        "(loss;some_jobs)",
-        "(loss;full_market)",
-        "(break_even;empty_market)",
-        "(break_even;some_jobs)",
-        "(break_even;full_market)",
-        "(profit;empty_market)",
-        "(profit;some_jobs)",
-        "(profit;full_market)"
-    ]
-
-    actions = ["list_job", "self_processing", "bid_0.25",
-               "bid_0.5", "bid_0.75", "bid_1.0"]
-
-    plt.figure(figsize=(10, 6))
-    ax = sns.heatmap(agent.q_table, annot=True, cmap="YlGnBu", cbar=True)
-    ax.set_xticklabels(actions, rotation=45)
-    ax.set_yticklabels(states, rotation=0)
-    plt.show()
-
-
-def run_episode(sim_env, max_steps):
+def run_episode(sim_env: MarketEnvironment, max_steps: int):
     states = sim_env.reset()
     done = False
     step_count = 0
+
+    round_info = {}
+
+    snapshot_intervall = 100
+    q_snapshots = {name: [] for name in sim_env.agents.keys()}
+    snap_steps = []
 
     while not done and step_count < max_steps:
         actions = {}
@@ -38,6 +20,15 @@ def run_episode(sim_env, max_steps):
 
         next_state, rewards, done, info = sim_env.step(actions)
 
+        round_info[step_count] = rewards
+        round_info[step_count]["mean_reward"] = statistics.mean(
+            rewards.values()
+        )
+        round_info[step_count]["social_welfare"] = sum(rewards.values())
+        round_info[step_count]["price"] = info["price"]
+        round_info[step_count]["avg_bid"] = info["round_avg_bid"]
+        round_info[step_count]["total_bids"] = info["total_bids"]
+
         for agent in sim_env.agents.values():
             agent.learn(
                 states[agent.name], actions[agent.name],
@@ -45,13 +36,11 @@ def run_episode(sim_env, max_steps):
             )
 
         states = next_state
-
         step_count += 1
 
-    print("==============")
-    print("Final Q-tables:")
-    for agent in sim_env.agents.values():
-        print(f"Agent {agent.name} [Epsilon: {agent.epsilon}]:")
-        # plot_q_tables(agent)
+        if step_count % snapshot_intervall == 0:
+            snap_steps.append(step_count)
+            for agent in sim_env.agents.values():
+                q_snapshots[agent.name].append(agent.q_table.copy())
 
-    print(f"Episode finished after {step_count} steps.")
+    return sim_env, round_info, q_snapshots, snap_steps

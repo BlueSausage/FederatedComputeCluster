@@ -78,15 +78,11 @@ class MarketEnvironment():
         self.jobs = []
         self.bids = []
 
-        self.market_load_prev = 0
-
         self.agents = self.generate_rz_list(
             num_rz=num_agents, costs=costs, sigma=sigma
         )
         self.price = self.determine_price()
 
-        self.market_price_history = []
-        self.trade_count_history = []
         self.pressure_history = []
         self.price_window = 10
 
@@ -104,7 +100,8 @@ class MarketEnvironment():
     def reset(self):
         self.jobs = []
         self.bids = []
-        self.market_load_prev = 0
+        self.pressure_history = []
+
         for agent in self.agents.values():
             agent.cost = agent.draw_cost()
         self.price = self.determine_price()
@@ -170,22 +167,24 @@ class MarketEnvironment():
                 # penalty for bidding with no possible earnings
                 rewards[agent_name] -= 10
 
-        self.market_load_prev = len(self.jobs)
         # determine winners
         winners = self.determine_winner()
 
+        # calculate market statistics
         round_winning_bids = [bid.bid for bid in winners]
-        round_avg_bid = statistics.mean(round_winning_bids) if round_winning_bids else 0.0
+        round_avg_bid = (
+            statistics.mean(round_winning_bids)
+            if round_winning_bids else 0.0
+        )
         trade_count = len(winners)
 
-        self.market_price_history.append(round_avg_bid)
-        self.trade_count_history.append(trade_count)
-
+        # Protect against division by zero
         max_trades = max(1, self.num_agents)
-        round_pressure = round_avg_bid * (trade_count / max_trades)  # Price x Volume
 
+        round_pressure = round_avg_bid * (trade_count / max_trades)
         self.pressure_history.append(round_pressure)
-        if len(self.market_price_history) > self.price_window:
+
+        if len(self.pressure_history) > self.price_window:
             self.pressure_history.pop(0)
 
         for bid in winners:
@@ -226,7 +225,7 @@ class MarketEnvironment():
                 self.get_market_level()
             )
         current["social_welfare"] = sum(rewards.values())
-        current["market_situation"] = self.market_price_history.copy()
+        current["market_situation"] = self.pressure_history.copy()
         return self.observations.copy(), rewards, False, current
 
     def generate_rz_list(self, num_rz, costs, sigma):
@@ -255,13 +254,13 @@ class MarketEnvironment():
         return 2
 
     def get_market_level(self):
-        if len(self.market_price_history) < 3:
+        if len(self.pressure_history) < 3:
             return 1  # medium competition by default
 
         avg_pressure = statistics.mean(self.pressure_history)
 
-        q33 = np.quantile(self.pressure_history, 0.33)
-        q66 = np.quantile(self.pressure_history, 0.66)
+        q33 = np.percentile(self.pressure_history, 33)
+        q66 = np.percentile(self.pressure_history, 66)
 
         if avg_pressure < q33:
             return 0  # low competition

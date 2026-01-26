@@ -112,11 +112,21 @@ Der Zustand eines Agenten setzt sich aus zwei diskretisierten Merkmalen zusammen
         \item[] 1: Break-Even (Kosten $=$ Auftragswert)
         \item[] 2: Gewinn (Kosten $<$ Auftragswert)
     \end{enumerate}
-    \item \textbf{Marktauslastung der Vorperiode} - eine Einschätzung der Wettbewerbssituation basierend auf der Anzahl der Maktangebote in der vorherigen Runde. Auch dieser Wert wird in drei diskrete Stufen eingeteilt:
+    \item \textbf{Marktauslastung der Vorherigen Runden} - um die Auslastung des Marktes im vorherigen Runden zu erfassen, wird der Marktzustand nicht nur anhand eines einzelnen Preissignals bestimmt, sondern über einen kombinierten Marktindikator, der sowohl Preis- als auch Volumeninformationen berücksichtigt.\newline
+    Da alle Agenten gleichzeitig in einer Runde agieren, existiert der aktuelle Markt zum Zeitpunkt der Entscheidung noch nicht. Daher stützt sich der Agent auf die Marktaktivität der vorherigen Runden.\newline
+    In jeder Runde wird berechnet, wie viel die erfolgreichen Bieter im Durchschnitt zahlen mussten, um einen zusätzlichen Auftrag zu erhalten. Der durchschnittlich gezahlte Preis in Runde $t$ ergibt sich als Mittelwert aller erfolgreichen Gebote
+    \[\bar{p}_t = \frac{1}{|W_t|} \sum_{b \in W_t} b \text{ für } |W_t| > 0\]
+    Wobei $W_t$ die Menge der in Runde $t$ erfolgreichen Gebote bezeichnet und $b$ für die Höhe der jeweiligen Gebote (für $|W_t| = 0$ wird $\bar{p}_t = 0$ gesetzt)\newline
+    Zusätztlich wird erfasst, wie viele Aufträge in einer Runde tatsächlich über den Markt vergeben wurden
+    \[v_t = |W_t|\]
+    Preis- und Volumeninformationen werden zu einem gemeinsamen Marktauslastungswert kombiniert. Dazu wird der durchschnittlich gezahlte Preis mit einem relativen Handelsvolumen multipliziert, das sich aus dem Verhältnis der erfolgreichen Handel zur maximal möglichen Anzahl an Transfers $N$ (Anzahl der Agenten) ergibt
+    \[m_t = \bar{p}_t \cdot \frac{v_t}{N}\]
+    Um zufällige Schwankungen einzelner Runden zu reduzieren, wird der Marktauslastungswert über ein gleitendes Fenster der letzten Runden gemittelt.\newline
+    Die Diskretisierung erfolgt relativ zur eigenen Markthistorie. Hierzu wird der Marktauslastungswert der vergangenen Runden anhand des 33\%- und 66\%-Perzentils in drei Breiche unterteilt:
     \begin{enumerate}
-        \item[] 0: kein Angebot (leerer Markt)
-        \item[] 1: vereinzelte Angebote (weniger Angebote als Agenten)
-        \item[] 2: gesättigter Markt (genauso viele oder mehr Angebote als Agenten)
+        \item[] 0: niedriger Marktdruck (unter dem 33\%-Perzentil)
+        \item[] 1: mittlerer Marktdruck (zwischen 33\% und 66\%-Perzentil)
+        \item[] 2: hoher Marktdruck (über dem 66\%-Perzentil)
     \end{enumerate}
 \end{enumerate}
 Die Kombination dieser beiden Merkmale ergibt einen Zustandsraum von $3 \times 3 = 9$ diskreten Zuständen pro Agent.

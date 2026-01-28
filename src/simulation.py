@@ -26,14 +26,14 @@ def run_episode(sim_env: MarketEnvironment, max_steps: int):
         )
         round_info[step_count]["social_welfare"] = sum(rewards.values())
         round_info[step_count]["price"] = info["price"]
-        round_info[step_count]["avg_bid"] = info["round_avg_bid"]
-        round_info[step_count]["total_bids"] = info["total_bids"]
+        round_info[step_count]["bids"] = info["bids"]
 
         for agent in sim_env.agents.values():
             agent.learn(
                 states[agent.name], actions[agent.name],
                 rewards[agent.name], next_state[agent.name]
             )
+            round_info[step_count][agent.name] = info[agent.name]
 
         states = next_state
         step_count += 1

@@ -126,22 +126,23 @@ class MarketEnvironment():
             "(profit;medium_competition)",
             "(profit;high_competition)"
         ]
-        current = {}
+        round_info = {}
         rewards = {}
-        current["price"] = self.price
+        round_info["price"] = self.price
         for agent_name, action in actions.items():
             earnings = self.price - self.agents[agent_name].cost
             rewards[agent_name] = 0
             obs = self.observations[agent_name]
             state_idx = obs[0] * 3 + obs[1]
 
-            current[agent_name] = {
+            round_info[agent_name] = {
                 "obs": obs,
                 "state": state_names[state_idx],
                 "action": action,
                 "action_name": action_names[action],
                 "cost": self.agents[agent_name].cost,
-                "possible_earnings": earnings
+                "possible_earnings": earnings,
+                "jobs": 1
             }
 
             # list job
@@ -187,8 +188,7 @@ class MarketEnvironment():
         if len(self.pressure_history) > self.price_window:
             self.pressure_history.pop(0)
 
-        current["total_bids"] = sum(round_winning_bids)
-        current["round_avg_bid"] = round_avg_bid
+        round_info["bids"] = round_winning_bids
 
         for bid in winners:
             # calculate rewards of bidder
@@ -200,18 +200,17 @@ class MarketEnvironment():
             rewards[winner] += bid.bid
             self.jobs.remove(winner)
             self.bids.remove(bid)
-            current[bid.bidder]["won_bid"] = bid.bid
-            current[winner]["received_bid"] = bid.bid
+            round_info[winner]["jobs"] -= 1
+            round_info[bid.bidder]["jobs"] += 1
+
         else:
             # if there are bidders without succes,
             # there reward will be self processing
             for job in self.jobs:
                 rewards[job] += self.price - self.agents[job].cost
-                current[job]["received_bid"] = 0
 
             for bid in self.bids:
                 rewards[bid.bidder] = self.price - self.agents[bid.bidder].cost
-                current[bid.bidder]["won_bid"] = 0
 
         # convert rewards to float
         rewards = {k: float(v) for k, v in rewards.items()}
@@ -221,7 +220,7 @@ class MarketEnvironment():
         self.bids = []
         # generate new costs, price
         for agent in self.agents.values():
-            current[agent.name]["actual_reward"] = rewards[agent.name]
+            round_info[agent.name]["actual_reward"] = rewards[agent.name]
             agent.cost = agent.draw_cost()
 
         self.price = self.determine_price()
@@ -230,9 +229,9 @@ class MarketEnvironment():
                 self.get_profitability_level(agent.cost),
                 self.get_market_level()
             )
-        current["social_welfare"] = sum(rewards.values())
-        current["market_situation"] = self.pressure_history.copy()
-        return self.observations.copy(), rewards, False, current
+        round_info["social_welfare"] = sum(rewards.values())
+        round_info["market_situation"] = self.pressure_history.copy()
+        return self.observations.copy(), rewards, False, round_info
 
     def generate_rz_list(self, num_rz, costs, sigma):
         rz_list = {}

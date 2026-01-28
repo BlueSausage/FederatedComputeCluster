@@ -76,72 +76,34 @@ def plot_q_convergance(q_snapshots, snap_steps):
     plt.show()
 
 
-def plot_rewards(round_info):
-    sns.set_style("whitegrid")
-    plt.figure(figsize=(12, 6))
-
-    steps = sorted(round_info.keys())
-
-    inner_dict = round_info[steps[0]]
-    rz_keys = [key for key in inner_dict.keys() if key.startswith("RZ")]
-
-    palette = sns.color_palette("tab10", n_colors=len(rz_keys))
-
-    for rz, color in zip(rz_keys, palette):
-        y = [round_info[s][rz] for s in steps]
-        plt.plot(steps, y, label=rz, color=color, linewidth=2)
-
-    mean = [round_info[step]["mean_reward"] for step in steps]
-    plt.plot(
-        steps, mean,
-        label="mean_reward",
-        linestyle="--",
-        color="black",
-        linewidth=3
-    )
-
-    social_welfare = [round_info[step]["social_welfare"] for step in steps]
-    plt.plot(
-        steps, social_welfare,
-        label="social_welfare",
-        linestyle="--",
-        color="gray",
-        linewidth=1.5
-    )
-
-    plt.xlabel("Step")
-    plt.ylabel("Reward")
-    plt.title("Agent Rewards Over Time")
-    plt.legend(loc="upper left")
-    plt.tight_layout()
-    plt.show()
-
-
 def plot_reward_for(agent_name, round_info, window_size=100):
     sns.set_style("whitegrid")
     plt.figure(figsize=(12, 6))
 
     steps = sorted(round_info.keys())
 
-    y = [round_info[s][agent_name] for s in steps]
+    if agent_name.startswith("RZ"):
+        reward = [round_info[s][agent_name]["actual_reward"] for s in steps]
+    else:
+        reward = [round_info[s][agent_name] for s in steps]
 
     # calculate moving average
-    y_ma = []
-    for i in range(len(y)):
+    reward_ma = []
+    for i in range(len(reward)):
         if i < window_size:
-            y_ma.append(sum(y[:i+1]) / (i+1))
+            reward_ma.append(sum(reward[:i+1]) / (i+1))
         else:
-            y_ma.append(sum(y[i-window_size+1:i+1]) / window_size)
+            reward_ma.append(sum(reward[i-window_size+1:i+1]) / window_size)
 
     plt.plot(
-        steps, y,
+        steps, reward,
         label=agent_name,
         color="blue",
         linewidth=2
     )
 
     plt.plot(
-        steps, y_ma,
+        steps, reward_ma,
         label=f"{agent_name} (MA)",
         color="black",
         linestyle="--",
@@ -166,7 +128,7 @@ def plot_cumulative_rewards(round_info):
     final_sum = {}
 
     for rz, _ in zip(rz_keys, palette):
-        y = [float(round_info[s][rz]) for s in steps]
+        y = [float(round_info[s][rz]["actual_reward"]) for s in steps]
         y_cum = np.cumsum(y)
         final_sum[rz] = y_cum[-1].item()
 

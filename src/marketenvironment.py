@@ -113,19 +113,6 @@ class MarketEnvironment():
         return self.observations.copy()
 
     def step(self, actions):
-        action_names = ["list_job", "self_processing", "bid_0.25",
-                        "bid_0.5", "bid_0.75", "bid_1.0"]
-        state_names = [
-            "(loss;low_competition)",
-            "(loss;medium_competition)",
-            "(loss;high_competition)",
-            "(break_even;low_competition)",
-            "(break_even;medium_competition)",
-            "(break_even;high_competition)",
-            "(profit;low_competition)",
-            "(profit;medium_competition)",
-            "(profit;high_competition)"
-        ]
         round_info = {}
         rewards = {}
         round_info["price"] = self.price
@@ -133,16 +120,17 @@ class MarketEnvironment():
             earnings = self.price - self.agents[agent_name].cost
             rewards[agent_name] = 0
             obs = self.observations[agent_name]
-            state_idx = obs[0] * 3 + obs[1]
 
             round_info[agent_name] = {
                 "obs": obs,
-                "state": state_names[state_idx],
                 "action": action,
-                "action_name": action_names[action],
                 "cost": self.agents[agent_name].cost,
                 "possible_earnings": earnings,
-                "jobs": 1
+                "jobs": 1,
+                "job_delegated_to": None,
+                "received": None,
+                "job_received_from": None,
+                "paid": None
             }
 
             # list job
@@ -201,7 +189,11 @@ class MarketEnvironment():
             self.jobs.remove(winner)
             self.bids.remove(bid)
             round_info[winner]["jobs"] -= 1
+            round_info[winner]["job_delegated_to"] = bid.bidder
+            round_info[winner]["received"] = bid.bid
             round_info[bid.bidder]["jobs"] += 1
+            round_info[bid.bidder]["job_received_from"] = winner
+            round_info[bid.bidder]["paid"] = bid.bid
 
         else:
             # if there are bidders without succes,

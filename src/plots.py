@@ -57,7 +57,7 @@ def plot_q_convergance(q_snapshots, snap_steps):
         d = []
         for i in range(1, len(snaps)):
             diff = snaps[i] - snaps[i-1]
-            d.append(np.linalg.norm(diff))  # 
+            d.append(np.linalg.norm(diff))
         deltas[name] = np.array(d, dtype=float)
 
     x = snap_steps[1:]
@@ -129,17 +129,23 @@ def plot_cumulative_rewards(round_info):
 
     for rz, _ in zip(rz_keys, palette):
         y = [float(round_info[s][rz]["actual_reward"]) for s in steps]
-        y_cum = np.cumsum(y)
-        final_sum[rz] = y_cum[-1].item()
+        final_sum[rz] = sum(y)
 
     plt.figure(figsize=(12, 6))
     agents = list(final_sum.keys())
     values = list(final_sum.values())
 
-    plt.bar(agents, values, color=palette)
+    bars = plt.bar(agents, values, color=palette)
 
     plt.ylabel("Final Cumulative Reward")
     plt.title("Final Cumulative Rewards per Agent")
+
+    plt.bar_label(
+        bars,
+        labels=[f"{v:.2f}" for v in values],
+        padding=3
+    )
+
     plt.tight_layout()
     plt.show()
 
@@ -178,5 +184,176 @@ def plot_price(round_info, window_size=100):
     plt.ylabel("Price")
     plt.title("Price Over Time")
     plt.legend(loc="upper left")
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_processed_jobs(round_info):
+    sns.set_style("whitegrid")
+
+    steps = round_info.keys()
+    rz_keys = [k for k in round_info[0].keys() if k.startswith("RZ")]
+    own_jobs = {rz: 0 for rz in rz_keys}
+    foreign_jobs = {rz: 0 for rz in rz_keys}
+
+    for step in steps:
+        for rz in rz_keys:
+            info = round_info[step][rz]
+
+            jobs = info.get("jobs", 0)
+
+            if jobs == 0:
+                continue
+            elif jobs == 1:
+                own_jobs[rz] += 1
+            else:
+                own_jobs[rz] += 1
+                foreign_jobs[rz] += 1
+
+    self_processed = [own_jobs[rz] for rz in rz_keys]
+    extra_jobs = [foreign_jobs[rz] for rz in rz_keys]
+
+    plt.figure(figsize=(12, 6))
+
+    own_job_bars = plt.bar(
+        rz_keys, self_processed, label="Own jobs"
+    )
+
+    plt.bar_label(
+        own_job_bars,
+        labels=[f"{v}" for v in self_processed],
+        label_type="center",
+        color="white",
+        fontsize=15,
+        fontweight="bold"
+    )
+
+    extra_jobs_bars = plt.bar(
+        rz_keys, extra_jobs, bottom=self_processed, label="Extra jobs"
+    )
+
+    plt.bar_label(
+        extra_jobs_bars,
+        labels=[f"{v}" for v in extra_jobs],
+        label_type="center",
+        color="white",
+        fontsize=15,
+        fontweight="bold"
+    )
+
+    plt.xlabel("Agents")
+    plt.ylabel("Total Jobs Handled")
+    plt.title("Total Jobs Handled by Each Agent")
+    plt.legend(loc="upper left")
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_processed_foreign_jobs(round_info):
+    sns.set_style("whitegrid")
+
+    steps = round_info.keys()
+    rz_keys = [k for k in round_info[0].keys() if k.startswith("RZ")]
+
+    jobs = {
+        rz: {other_rz: 0 for other_rz in rz_keys if other_rz != rz}
+        for rz in rz_keys
+    }
+
+    for step in steps:
+        for rz in rz_keys:
+            info = round_info[step][rz]
+
+            foreign_job = info["job_received_from"]
+
+            if foreign_job is None:
+                continue
+
+            jobs[rz][foreign_job] += 1
+
+    bottom = [0] * len(rz_keys)
+    palette = sns.color_palette("tab10", n_colors=len(rz_keys))
+
+    plt.figure(figsize=(12, 6))
+
+    for src, color in zip(rz_keys, palette):
+        values = [jobs[rz].get(src, 0) for rz in rz_keys]
+
+        bar = plt.bar(
+            rz_keys,
+            values,
+            bottom=bottom,
+            label=f"{src}",
+            color=color
+        )
+
+        plt.bar_label(
+            bar,
+            labels=[f"{v if v != 0 else ''}" for v in values],
+            label_type="center",
+            color="white",
+            fontsize=10,
+            fontweight="bold"
+        )
+
+        bottom = [b + v for b, v in zip(bottom, values)]
+
+    plt.xlabel("Agent (job receiver)")
+    plt.ylabel("Foreign jobs processed")
+    plt.title("Foreign Jobs Processed by Agents")
+    plt.legend(
+        title="Job Source Agent",
+        bbox_to_anchor=(1, 1)
+    )
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_paid_on_market(round_info):
+    steps = round_info.keys()
+    rz_keys = [k for k in round_info[0].keys() if k.startswith("RZ")]
+
+    paid_on_market = {rz: {
+                        "paid": []
+                    } for rz in rz_keys}
+
+    for step in steps:
+        info = round_info[step]
+        for rz in rz_keys:
+            paid = info[rz]["paid"]
+            if paid:
+                paid_on_market[rz]["paid"].append(paid)
+
+    plt.Figure(figsize=(12, 6))
+    palette = sns.color_palette("tab10", n_colors=len(rz_keys))
+
+    sum_values = [
+        sum(paid_on_market[rz]["paid"]) for rz in rz_keys
+    ]
+
+    mean_values = [
+        statistics.mean(paid_on_market[rz]["paid"]) for rz in rz_keys
+    ]
+
+    bars = plt.bar(rz_keys, sum_values, color=palette)
+
+    plt.ylabel("Total Paid on Market")
+    plt.title("Total Paid on Market per Agent")
+
+    plt.bar_label(
+        bars,
+        labels=[f"{v:.2f}" for v in sum_values],
+        padding=3
+    )
+
+    plt.bar_label(
+        bars,
+        labels=[f"Mean\n{v:.2f}" for v in mean_values],
+        label_type="center",
+        color="white",
+        fontsize=10,
+        fontweight="bold"
+    )
+
     plt.tight_layout()
     plt.show()

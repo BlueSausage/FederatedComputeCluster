@@ -6,7 +6,7 @@ import statistics
 from matplotlib.patches import Rectangle
 
 
-def plot_q_tables(agent):
+def plot_q_tables(q_table):
     states = [
         "(loss;low_competition)",
         "(loss;medium_competition)",
@@ -25,16 +25,16 @@ def plot_q_tables(agent):
     plt.figure(figsize=(10, 6))
 
     ax = sns.heatmap(
-        agent.q_table,
+        q_table,
         annot=True,
         cmap="RdYlGn",
         center=0,
         cbar=True
     )
 
-    best_actions = np.argmax(agent.q_table, axis=1)
+    best_actions = np.argmax(q_table, axis=1)
     for row, col in enumerate(best_actions):
-        if agent.q_table[row][col] > 0:
+        if q_table[row][col] > 0:
             rect = Rectangle(
                 (col, row), 1, 1,
                 fill=False,
@@ -56,7 +56,7 @@ def plot_q_convergance(q_snapshots, snap_steps):
     for name, snaps in q_snapshots.items():
         d = []
         for i in range(1, len(snaps)):
-            diff = snaps[i] - snaps[i-1]
+            diff = np.array(snaps[i]) - np.array(snaps[i-1])
             d.append(np.linalg.norm(diff))
         deltas[name] = np.array(d, dtype=float)
 
@@ -68,17 +68,17 @@ def plot_q_convergance(q_snapshots, snap_steps):
     for (name, d), color in zip(deltas.items(), palette):
         plt.plot(x, d, label=name, color=color, linewidth=2)
 
-    plt.xlabel("Steps")
-    plt.ylabel("L2 change of Q-Table")
-    plt.title("Q-table changes over time")
-    plt.legend(title="Agents", loc="upper left")
+    plt.xlabel("Schritte")
+    plt.ylabel("L2 Änderung der Q-Tabelle")
+    plt.title("Änderungen der Q-Tabelle über die Zeit")
+    plt.legend(title="Agenten", loc="upper left")
     plt.tight_layout()
     plt.show()
 
 
-def plot_reward_for(agent_name, round_info, window_size=100):
+def plot_reward_for(agent_name, round_info, window_size=100, only_ma=False):
+    print(agent_name)
     sns.set_style("whitegrid")
-    plt.figure(figsize=(12, 6))
 
     steps = sorted(round_info.keys())
 
@@ -95,12 +95,14 @@ def plot_reward_for(agent_name, round_info, window_size=100):
         else:
             reward_ma.append(sum(reward[i-window_size+1:i+1]) / window_size)
 
-    plt.plot(
-        steps, reward,
-        label=agent_name,
-        color="blue",
-        linewidth=2
-    )
+    plt.figure(figsize=(12, 6))
+    if not only_ma:
+        plt.plot(
+            steps, reward,
+            label=agent_name,
+            color="blue",
+            linewidth=2
+        )
 
     plt.plot(
         steps, reward_ma,
@@ -110,9 +112,48 @@ def plot_reward_for(agent_name, round_info, window_size=100):
         linewidth=1
     )
 
-    plt.xlabel("Step")
+    plt.xlabel("Schritte")
     plt.ylabel("Reward")
-    plt.title(f"Reward Over Time for {agent_name}")
+    plt.title(f"{agent_name} über Zeit")
+    plt.legend(loc="upper left")
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_average_rewards(round_info):
+    window_size = 100
+    steps = sorted(round_info.keys())
+    rz_keys = [k for k in round_info[steps[0]].keys() if k.startswith("RZ")]
+    sns.set_style("whitegrid")
+
+    reward = {}
+    reward_ma = {}
+
+    for rz in rz_keys:
+        reward[rz] = [round_info[s][rz]["actual_reward"] for s in steps]
+
+    # calculate moving average
+    for rz in rz_keys:
+        ma = []
+        for i in range(len(reward[rz])):
+            if i < window_size:
+                ma.append(sum(reward[rz][:i+1]) / (i+1))
+            else:
+                ma.append(sum(reward[rz][i-window_size+1:i+1]) / window_size)
+        reward_ma[rz] = ma
+
+    plt.figure(figsize=(12, 6))
+
+    for rz in rz_keys:
+        plt.plot(
+            steps,
+            reward_ma[rz],
+            label=f"{rz}"
+        )
+
+    plt.xlabel("Schritte")
+    plt.ylabel("Durchschnitts-Reward")
+    plt.title("Durchschnitts-Reward pro Agent über Zeit")
     plt.legend(loc="upper left")
     plt.tight_layout()
     plt.show()
@@ -126,9 +167,11 @@ def plot_cumulative_rewards(round_info):
     palette = sns.color_palette("tab10", n_colors=len(rz_keys))
 
     final_sum = {}
+    mean_values = {}
 
     for rz, _ in zip(rz_keys, palette):
         y = [float(round_info[s][rz]["actual_reward"]) for s in steps]
+        mean_values[rz] = statistics.mean(y)
         final_sum[rz] = sum(y)
 
     plt.figure(figsize=(12, 6))
@@ -137,15 +180,23 @@ def plot_cumulative_rewards(round_info):
 
     bars = plt.bar(agents, values, color=palette)
 
-    plt.ylabel("Final Cumulative Reward")
-    plt.title("Final Cumulative Rewards per Agent")
-
     plt.bar_label(
         bars,
         labels=[f"{v:.2f}" for v in values],
         padding=3
     )
 
+    plt.bar_label(
+        bars,
+        labels=[f"Mean\n{mean_values[rz]:.2f}" for rz in agents],
+        label_type="center",
+        color="white",
+        fontsize=10,
+        fontweight="bold"
+    )
+
+    plt.title("Gewinn pro Agent")
+    plt.ylabel("Kumulativer Reward")
     plt.tight_layout()
     plt.show()
 
@@ -216,7 +267,7 @@ def plot_processed_jobs(round_info):
     plt.figure(figsize=(12, 6))
 
     own_job_bars = plt.bar(
-        rz_keys, self_processed, label="Own jobs"
+        rz_keys, self_processed, label="Eigene Aufträge"
     )
 
     plt.bar_label(
@@ -229,7 +280,7 @@ def plot_processed_jobs(round_info):
     )
 
     extra_jobs_bars = plt.bar(
-        rz_keys, extra_jobs, bottom=self_processed, label="Extra jobs"
+        rz_keys, extra_jobs, bottom=self_processed, label="Extra Aufträge"
     )
 
     plt.bar_label(
@@ -241,10 +292,9 @@ def plot_processed_jobs(round_info):
         fontweight="bold"
     )
 
-    plt.xlabel("Agents")
-    plt.ylabel("Total Jobs Handled")
-    plt.title("Total Jobs Handled by Each Agent")
-    plt.legend(loc="upper left")
+    plt.ylabel("Bearbeitete Aufträge")
+    plt.title("Bearbeitete Aufträge pro Agent")
+    plt.legend(loc="upper right")
     plt.tight_layout()
     plt.show()
 
@@ -310,9 +360,10 @@ def plot_processed_foreign_jobs(round_info):
 
 
 def plot_paid_on_market(round_info):
+    sns.set_style("whitegrid")
+
     steps = round_info.keys()
     rz_keys = [k for k in round_info[0].keys() if k.startswith("RZ")]
-
     paid_on_market = {rz: {
                         "paid": []
                     } for rz in rz_keys}
@@ -324,7 +375,7 @@ def plot_paid_on_market(round_info):
             if paid:
                 paid_on_market[rz]["paid"].append(paid)
 
-    plt.Figure(figsize=(12, 6))
+    plt.figure(figsize=(12, 6))
     palette = sns.color_palette("tab10", n_colors=len(rz_keys))
 
     sum_values = [
@@ -332,7 +383,8 @@ def plot_paid_on_market(round_info):
     ]
 
     mean_values = [
-        statistics.mean(paid_on_market[rz]["paid"]) for rz in rz_keys
+        statistics.mean(paid_on_market[rz]["paid"]) for rz in rz_keys 
+        if paid_on_market[rz]["paid"]
     ]
 
     bars = plt.bar(rz_keys, sum_values, color=palette)
@@ -355,5 +407,64 @@ def plot_paid_on_market(round_info):
         fontweight="bold"
     )
 
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_processed_vs_listed(round_info):
+    sns.set_style("whitegrid")
+    steps = sorted(round_info.keys())
+    rz_keys = [key for key in round_info[0].keys() if key.startswith("RZ")]
+
+    temp = {
+        rz: {
+            "processed": 0,
+            "listed": 0
+        } for rz in rz_keys
+    }
+
+    for step in steps:
+        for rz in rz_keys:
+            info = round_info[step][rz]
+            jobs = info["jobs"]
+            if jobs > 0:
+                temp[rz]["processed"] += 1
+            else:
+                temp[rz]["listed"] += 1
+
+    self_processed = [temp[rz]["processed"] for rz in rz_keys]
+    listed = [temp[rz]["listed"] for rz in rz_keys]
+
+    plt.figure(figsize=(12, 6))
+
+    self_processed_bar = plt.bar(
+        rz_keys, self_processed, label="Selbst bearbeitet"
+    )
+
+    plt.bar_label(
+        self_processed_bar,
+        labels=[f"{v}" for v in self_processed],
+        label_type="center",
+        color="white",
+        fontsize=15,
+        fontweight="bold"
+    )
+
+    listed_bar = plt.bar(
+        rz_keys, listed, bottom=self_processed, label="Gelistet"
+    )
+
+    plt.bar_label(
+        listed_bar,
+        labels=[f"{v}" for v in listed],
+        label_type="center",
+        color="white",
+        fontsize=15,
+        fontweight="bold"
+    )
+
+    plt.ylabel("Anzahl Aufträge")
+    plt.title("Bearbeitete vs. gelistete Aufträge")
+    plt.legend(loc="upper right")
     plt.tight_layout()
     plt.show()

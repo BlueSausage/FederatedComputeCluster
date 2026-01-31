@@ -646,7 +646,7 @@
 \setlength\columnseprule{0\p@}
 
 %% no page numbering: plain modified to empty
-\pagestyle{empty}
+\pagestyle{plain}
 \pagenumbering{arabic}
 
 \if@twoside

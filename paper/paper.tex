@@ -44,7 +44,7 @@ Im Rahmen des Praktikum zu verteilten adaptiven Systemen wurde die Auftragsverga
 Zur Modellierung eines realitätsnahen Marktumfelds werden zwei verschiedene Varianten der Preis- und Kostenstruktur betrachtet. Eine dynamische, rundenweise variierende Variante sowie ein statisches, festes Kostenmodell für die Agenten.
 \newline
 Im dynamischen Szenario werden sowohl die Bearbeitungskosten der RZs als auch der Auftragswert in jeder Runde neu generiert. Jedes RZ zieht zu Beginn jeder Runde seine individuellen Bearbeitungskosten aus einer Normalverteilung $N(\mu_{cost}, \sigma_{cost})$ mit einem Erwartungswert $\mu_{cost}$ von 5 und einer Standardabweichung $\sigma_{cost}$ von 2. Die gezogenen Werte werden auf positive ganze Zahlen abgerundet und auf einen Wertebereich von 1 bis 10 begrenzt. Diese Begrenzung erleichtert die anschließende Diskretisierung der Zustände.
-Die Wahl von $\mu = 5$ orientiert sich an einem mittleren Kostenniveau, das zugleich als Referenzwert für die Auftragsbewertung dient. Die Standardabweichung $\sigma = 2$ sorgt für eine realistische Streuung der Kosten um diesen Mittelwert. Nach der 68-95-99.7-Regel liegen damit ca. 95\% der gezogenen Werte im Intervall $[1, 9]$, was in Kombination mit der Begrenzung auf $[1, 10]$ einen kontrollierten, aber variierenden Kostenbereich gewährleistet \cite{westfallunderstanding}. So wird eine glaubwürdige Marktunsicherheit erzeugt, bei der Agenten sowohl in profitablen als auch in verlustreichen Situationen Entscheidungen treffen müssen.
+Die Wahl von $\mu = 5$ orientiert sich an einem mittleren Kostenniveau, das zugleich als Referenzwert für die Auftragsbewertung dient. Die Standardabweichung $\sigma = 2$ sorgt für eine realistische Streuung der Kosten um diesen Mittelwert. Nach der 68-95-99.7-Regel liegen damit ca. 95\% der gezogenen Werte im Intervall $[1, 9]$, was in Kombination mit der Begrenzung auf $[1, 10]$ einen kontrollierten, aber variierenden Kostenbereich gewährleistet \cite{westfallunderstanding}.
 \newline
 Der Preis, der in einer Runde für alle Aufträge gleichermaßen gilt, wird als der aufgerundete Erwartungswert der gezogenen Kosten aller RZs berechnet. Dadurch ist der Auftragswert immer mindestens so hoch wie der Durchschnitt der Bearbeitungskosten im System. Diese dynamische Preisgestaltung erzeugt ein spannungsreiches Umfeld, in dem RZs je nach individueller Kostensituation entweder Gewinn, Verlust oder Break-Even erzielen können. RZs mit überdurchschnittlich hohen Kosten haben die Möglichkeit, ihre Aufträge am Markt zu verkaufen, während günstigere RZs durch Zukäufe zusätzliche Gewinne erzielen können.
 \newline
@@ -76,13 +76,11 @@ Um diese Fragen zu beantwortung wird eine simulationsbasierte Analyse durchgefü
 \subsection{Q-Learning}
 Q-Learning ist ein modellfreies, off-policy Verfahren des Reinforcement Learning, das darauf abzielt, direkt die optimale Aktionswertfunktion $Q^*$ und damit eine optimale Strategie (Policy) $\pi^*$ zu erlernen, dabei kann der Agent einer explorativen Policy folgen, während das Lernen unabhängig davon erfolgt. Zentral ist die Q-Funktion $Q(s, a)$, die den erwarteten kumulierten Ertrag angibt, wenn der Agent in Zustand $s$ die Aktion $a$ wählt und anschließend optimal handelt \cite{sutton}. Das Update basiert auf der maximalen Bewertung des Folgezustands und erfordert kein Modell der Umwelt \cite{busoniucomprehensive}. 
 \newline
-Die optimale Q-Funktion $Q^*$ erfüllt die Bellman-Optimalitätsgleichung und beschreibt den erwarteten kumulierten Ertrag, wenn der Agent sich in einem Zustand $s$ befindet, die Aktion $a$ ausführt und anschließend optimal handelt \cite{szepesvarireinforcement}.
+Die optimale Q-Funktion $Q^*$ erfüllt die Bellman-Optimalitätsgleichung und beschreibt den erwarteten kumulierten Ertrag, wenn der Agent sich in einem Zustand $s$ befindet, die Aktion $a$ ausführt und anschließend optimal handelt \cite{szepesvarireinforcement}. Formal ergibt sich
 \[
 Q^*(s, a) = \mathbb{E} \left[ R_{t+1} + \gamma  \max_{a'} Q^*(s', a') \vert S_t=s, A_t=a \right]
 \]
-wobei der Erwartungswert sowohl die stochastische Belohnung als auch die Übergangsdynamik der Umgebung berücksichtigt \cite{mnihplaying}.
-
-Da die Übergangswahrscheinlichkeit und Belohnungsverteilung in modelfreien Verfahren nicht bekannt sind, wird die Aktionswertfunktion $Q(s, a)$ iterativ durch Interaktionen mit der Umgebung geschätzt \cite{busoniucomprehensive}. Beim Q-Learning erfolgt die Aktualisierung der Q-Werte schrittweise auf Basis eines temporalen Differenzfehlers \cite{busoniucomprehensive}. Nach der Ausführung einer Aktion $a$ im Zustand $s$, dem Beobachten der Belohnung $R_{t+1}$ und des Folgezustands $s'$,wird der zugehörige Q-Wert mithilfe der folgenden Update-Regel angepasst \cite{sutton}
+wobei der Erwartungswert sowohl die stochastische Belohnung als auch die Über-gangsdynamik der Umgebung berücksichtigt \cite{mnihplaying}. Da die Übergangswahrscheinlich-keit und Belohnungsverteilung in modelfreien Verfahren nicht bekannt sind, wird die Aktionswertfunktion $Q(s, a)$ iterativ durch Interaktionen mit der Umgebung geschätzt \cite{busoniucomprehensive}. Beim Q-Learning erfolgt die Aktualisierung der Q-Werte schrittweise auf Basis eines temporalen Differenzfehlers \cite{busoniucomprehensive}. Nach der Ausführung einer Aktion $a$ im Zustand $s$, dem Beobachten der Belohnung $R_{t+1}$ und des Folgezustands $s'$,wird der zugehörige Q-Wert mithilfe der folgenden Update-Regel angepasst \cite{sutton}
 \[
 Q(s, a) \leftarrow Q(s, a) + \alpha (R_{t+1} + \gamma \max_{a'}Q(s', a') - Q(s, a))
 \]
@@ -165,6 +163,8 @@ Das entwickelte Marktmodell wird mithilfe einer simulationsbasierten Multi-Agent
 Zur Untersuchung des Lernverhaltens und der Ergebnisverteilung im Marktmodell wurden zwei Simulationsexperimente mit jeweils fünf Agenten durchgeführt. Alle Agenten nutzen tabellarisches Q-Learning zur Entscheidung über ihre Aktionen. Jede Simulation erstreckt sich über 8000 Runden, basierend auf vorherigen Beobachtungen, dass sich der durchschnittliche Reward ab etwa Runde 3000 stabilisiert (siehe Abbildung \ref{fig:social_welfare}). Dadurch ist gewährleistet, dass genügend Lernzeit zur Verfügung steht, um langfristige Verhaltensmuster zu analysieren.
 \newline
 \newline
+\newline
+\newline
 Im ersten Experiment werden die Agentenkosten dynamisch modelliert. In jeder Runde zieht jeder Agent seine individuellen Kosten aus einer Normalverteilung mit Erwartungswert $\mu_{cost} = 5$ und Standardabweichung $\sigma_{cost} = 2$ (siehe Kapitel \ref{price}). Durch diese Form der Zufallsvariation ergeben sich wechselnde Marktbedingungen, unter denen alle Agenten theoretisch gleich gute Chancen haben.
 \newline
 \newline
@@ -180,8 +180,7 @@ Die erste Forschungsfrage untersucht, ob Agenten im dynamischen Marktumfeld durc
     \label{fig:q_table_rz5}
 \end{figure}
 Ein zentrales Element dieser Analyse ist die exemplarische Q-Tabelle von Agent RZ5 (siehe Abbildung \ref{fig:q_table_rz5}). Sie zeigt, dass der Agent in Zuständen mit Verlusten systematisch die Aktion „Job inserieren“ wählt, unabhängig vom vorherigen Marktzustand. In Situationen mit Gewinn hingegen bevorzugt er das Bieten mit einem moderaten Faktor (0.5 des Gewinn aus der Selbstbearbeitung). Dieses Verhalten ist konsistent mit einer ökonomisch rationalen Strategie: Der Agent vermeidet risikobehaftete Aktionen bei Verlust und nutzt günstige Kostenlagen gezielt aus.
-\newline
-\begin{figure}[!htb]
+\begin{figure}[!b]
     \begin{subfigure}{0.5\textwidth}
         \centering
         \includegraphics[width=0.9\linewidth]{figures/q_table_convergence.png}
@@ -194,7 +193,9 @@ Ein zentrales Element dieser Analyse ist die exemplarische Q-Tabelle von Agent R
         \caption{Entwicklung des Social Welfare über die Zeit.}
         \label{fig:social_welfare}
     \end{subfigure}
+    \caption{Lernverhalten der Agenten im dynamischen Szenario.}
 \end{figure}
+\newline
 Die Entwicklung der Q-Werte über die Zeit wird in Abbildung \ref{fig:q_table_rz3} dargestellt. Hier zeigt sich, dass sich die Q-Werte aller Agenten im Laufe der Simulation deutlich stabilisieren. Bereits nach etwa 3000 Runden geht die durchschnittliche Änderung der Q-Tabelle deutlich zurück und pendelt sich auf einem niedrigen Niveau ein. Dies deutet auf eine Konvergenz der individuellen Lernprozesse hin, die Agenten haben stabile Strategien ausgebildet.
 \newline
 Auch die Entwicklung des Social Welfare über die Zeit bestätigt diesen Trend (siehe Abbildung \ref{fig:social_welfare}). Nach anfänglichen Schwankungen steigt der durchschnittliche Gesamtertrag des Systems kontinuierlich an und erreicht ab Runde 3000 ein weitgehend stabiles Niveau. Dies legt nahe, dass nicht nur individuelle Agenten voneinander lernen, sondern dass sich auch das Zusammenspiel im Markt verbessert.
@@ -225,6 +226,7 @@ Die Auswertung der kumulierten Gewinne (siehe Abbildung \ref{fig:reward_agents})
         \caption{Gelistete vs. bearbeitete Aufträge.}
         \label{fig:processed_vs_listed}
     \end{subfigure}
+    \caption{Analyse der Auftragsverteilung.}
 \end{figure}
 Die Analyse der bearbeiteten Aufträge (siehe Abbildung \ref{fig:processed_jobs}) unterstreicht diese Unterschiede. RZ1 und RZ2 bearbeiten nicht nur durchgehend ihre eigenen Jobs, sondern gewinnen auch zahlreiche zusätzliche Aufträge am Markt (7.538 bzw. 7.378). Die übrigen Agenten bearbeiten ausschließlich ihre eigenen Aufträge und gewinnen keine fremde. Diese Verteilung zeigt, dass nur Agenten mit Gewinn tatsächlich am Markt agieren.
 \newline

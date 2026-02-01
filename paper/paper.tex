@@ -34,23 +34,23 @@ niklas.schneider@haw-hamburg.de
 \maketitle
 
 \begin{abstract}
-\lipsum[1]
+In dieser Arbeit wird ein dezentraler Markt zur Auftragsvergabe zwischen Rechenzentren (RZs) modelliert und mithilfe tabellarischen Q-Learnings analysiert. Jedes RZ agiert als autonomer Agent, der bei dynamisch generierten Auftragskosten und -werten zwischen Selbstbearbeitung, Outsourcing und Bietstrategien wählen kann. Ziel ist es, das Lernverhalten der Agenten sowie die langfristige Verteilung von Gewinnen und Aufträgen zu untersuchen. Zwei Experimente, eines mit dynamischen, eines mit festen Bearbeitungskosten, zeigen, dass Agenten unter geeigneter Modellierung stabile und ökonomisch sinnvolle Strategien entwickeln. Während sich im dynamischen Szenario langfristig eine faire Ergebnisverteilung einstellt, setzen sich im statischen Fall Agenten mit strukturellen Vorteilen durch, sofern sie diese auch strategisch nutzen. Die Ergebnisse unterstreichen die Bedeutung von Lernen und Strategieanpassung in komplexen Multi-Agenten-Märkten.
 \end{abstract}
 
 \section{Einführung}
 Im Rahmen des Praktikum zu verteilten adaptiven Systemen wurde die Auftragsvergabe zwischen Rechenzentren (RZs) bisher zentral oder regelbasiert organisiert. In dieser Arbeit wird das Szenario zu einem dezentralen Markt weiterentwickelt, in dem mehrere RZs als autonome, lernende Agenten agieren. Sie können Aufträge selbstbearbeiten, auf dem Markt anbieten oder mit Erlösen aus der Selbstbearbeitung auf fremde Aufträge bieten. Ziel ist es, mit Hilfe von Q-Learning zu untersuchen, wie sich Strategien, Gewinne und die Verteilung der Aufträge unter realistischen Marktbedingungen entwickeln.
 
 \subsection{Preisgestaltung} \label{price}
-Statische Preisgestaltung ergänzen\dots
+Zur Modellierung eines realitätsnahen Marktumfelds werden zwei verschiedene Varianten der Preis- und Kostenstruktur betrachtet. Eine dynamische, rundenweise variierende Variante sowie ein statisches, festes Kostenmodell für die Agenten.
 \newline
+Im dynamischen Szenario werden sowohl die Bearbeitungskosten der RZs als auch der Auftragswert in jeder Runde neu generiert. Jedes RZ zieht zu Beginn jeder Runde seine individuellen Bearbeitungskosten aus einer Normalverteilung $N(\mu_{cost}, \sigma_{cost})$ mit einem Erwartungswert $\mu_{cost}$ von 5 und einer Standardabweichung $\sigma_{cost}$ von 2. Die gezogenen Werte werden auf positive ganze Zahlen abgerundet und auf einen Wertebereich von 1 bis 10 begrenzt. Diese Begrenzung erleichtert die anschließende Diskretisierung der Zustände.
+Die Wahl von $\mu = 5$ orientiert sich an einem mittleren Kostenniveau, das zugleich als Referenzwert für die Auftragsbewertung dient. Die Standardabweichung $\sigma = 2$ sorgt für eine realistische Streuung der Kosten um diesen Mittelwert. Nach der 68-95-99.7-Regel liegen damit ca. 95\% der gezogenen Werte im Intervall $[1, 9]$, was in Kombination mit der Begrenzung auf $[1, 10]$ einen kontrollierten, aber variierenden Kostenbereich gewährleistet \cite{westfallunderstanding}. So wird eine glaubwürdige Marktunsicherheit erzeugt, bei der Agenten sowohl in profitablen als auch in verlustreichen Situationen Entscheidungen treffen müssen.
 \newline
-Sowohl die Kosten der RZs als auch der Auftragswert für Aufträge werden in jeder Runde dynamisch generiert, um ein realistisches, variierendes Marktumfeld zu simulieren.
+Der Preis, der in einer Runde für alle Aufträge gleichermaßen gilt, wird als der aufgerundete Erwartungswert der gezogenen Kosten aller RZs berechnet. Dadurch ist der Auftragswert immer mindestens so hoch wie der Durchschnitt der Bearbeitungskosten im System. Diese dynamische Preisgestaltung erzeugt ein spannungsreiches Umfeld, in dem RZs je nach individueller Kostensituation entweder Gewinn, Verlust oder Break-Even erzielen können. RZs mit überdurchschnittlich hohen Kosten haben die Möglichkeit, ihre Aufträge am Markt zu verkaufen, während günstigere RZs durch Zukäufe zusätzliche Gewinne erzielen können.
 \newline
-Jedes RZ zieht zu beginn jeder Runde seine individuellen Bearbeitungskosten aus einer Normalverteilung $N(\mu_{cost}, \sigma_{cost})$, mit einem Erwartungswert $\mu_{cost}$ von 5 und einer Standardabweichung $\sigma_{cost}$ von 2. Die gezogenen Werte werden auf positive ganze Zahlen abgerundet und auf einen Wertebreich von 1 bis 10 begrenzt. Dadurch wird das einteilen der Kosten in diskrete Kategorien erleichtert.
+Im statischen Szenario hingegen erhalten die RZs feste Bearbeitungskosten, die sich über alle Runden nicht verändern. In den durchgeführten Experimenten wurden folgende Kostenwerte verwendet: $[2, 3, 5, 7, 8]$. Diese decken systematisch alle Zustände des Modells ab, da der rundenweise berechnete Preis auch hier auf Basis des Durchschnitts der Agentenkosten entsteht. Anders als im dynamischen Fall verbleiben die Kostenstrukturen jedoch über alle Runden konstant, was es ermöglicht, strukturelle Vorteile einzelner Agenten gezielt zu untersuchen.
 \newline
-Der Preis, der in einer Runde für alle Aufträge gleichermaßen gilt, wird als der Erwartungswert der gezogenen Kosten aller RZs berechnet. Dieser Wert wird auf eine positive ganze Zahl aufgerundet, sodass der Auftragswert immer so hoch wie der Durchschnitt der Bearbeitungskosten aller RZs ist. Dies stellt sicher, dass es für die RZs grundsätzlich möglich ist, durch Selbstbearbeitung Gewinne zu erzielen, während gleichzeitig ein Wettbewerbsdruck durch die variierenden Kosten entsteht.
-\newline
-Durch die Kombination aus zufälligen, eingegrenzten Kosten und rundenweise neu berechnetem Preis kann es in einzelnen Runden zu Verlusten bei der Selbstbearbeitung kommen. RZs mit überdurchschnittlich Kosten können dann versuchen, ihren Auftrag über den Markt zu verkaufen. Auf diese Weise entsteht ein lernrelevantes Spannungsfeld zwischen Selbstbearbeitung, Outsourcing und Marktteilnahme.
+Beide Varianten dienen dazu, unterschiedliche Aspekte des Agentenverhaltens und der Ergebnisverteilung im Markt zu beleuchten und ermöglichen einen fundierten Vergleich zwischen Lernszenarien mit Unsicherheit und solchen mit festen Bedingungen.
 
 \subsection{Auktionsverfahren}
 In dem betrachteten Marktszenario haben RZs in jeder Runde drei Handlungs-möglichkeiten. Sie können ihren Auftrag selbst bearbeiten, ihn auf dem Markt zum Verkauf anbieten oder mit dem Erlös aus der Selbstbearbeitung ein Gebot für einen weiteren Auftrag abgeben.
@@ -74,22 +74,26 @@ Um diese Fragen zu beantwortung wird eine simulationsbasierte Analyse durchgefü
 
 \section{Methodik/Grundlagen}
 \subsection{Q-Learning}
-Q-Learning ist ein modellfreies Verfahren des Reinforcement Learning, das darauf abzielt, eine optimale Strategie (Policy) $\pi^*$ für einen Agenten zu erlernen. Ziel ist es, für jeden Zustand $s$ eine Aktion $a$ zu finden, die langfristig die höchste kumulierte Belohnung verspricht. Dabei erhält der Agent bei der Ausführung von Aktion $a$ in Zustand $s$ eine direkte Belohnung $r(s, a)$ und lernt aus der Übergangsdynamik der Umgebung.
-Zentral ist die sogenannte Q-Funktion $Q(s, a)$ die den erwarteten Nutzen angibt, wenn der Agent in Zustand $s$ die Aktion $a$ wählt und danach der optimalen Policy $\pi^*$ folgt. Die optimale Q-Funktion $Q^*$ erfüllt die Bellmann-Gleichung:
+Q-Learning ist ein modellfreies, off-policy Verfahren des Reinforcement Learning, das darauf abzielt, direkt die optimale Aktionswertfunktion $Q^*$ und damit eine optimale Strategie (Policy) $\pi^*$ zu erlernen, dabei kann der Agent einer explorativen Policy folgen, während das Lernen unabhängig davon erfolgt. Zentral ist die Q-Funktion $Q(s, a)$, die den erwarteten kumulierten Ertrag angibt, wenn der Agent in Zustand $s$ die Aktion $a$ wählt und anschließend optimal handelt \cite{sutton}. Das Update basiert auf der maximalen Bewertung des Folgezustands und erfordert kein Modell der Umwelt \cite{busoniucomprehensive}. 
+\newline
+Die optimale Q-Funktion $Q^*$ erfüllt die Bellman-Optimalitätsgleichung und beschreibt den erwarteten kumulierten Ertrag, wenn der Agent sich in einem Zustand $s$ befindet, die Aktion $a$ ausführt und anschließend optimal handelt \cite{szepesvarireinforcement}.
 \[
-Q^*(s, a) = r(s, a) + \gamma \cdot \sum_{s'} p(s'|s, a) \cdot \max_{a'} Q^*(s', a')
+Q^*(s, a) = \mathbb{E} \left[ R_{t+1} + \gamma  \max_{a'} Q^*(s', a') \vert S_t=s, A_t=a \right]
 \]
-Da die Übergangswahrscheinlichkeit $p(s'|s, a)$ in modelfreien Verfahren nich bekannt sind, wird $Q(s, a)$ iterativ durch Interaktionen mit der Umgebung geschätzt. Die Aktualisierung der Q-Werte ist durch folgende Funktion definiert:
+wobei der Erwartungswert sowohl die stochastische Belohnung als auch die Übergangsdynamik der Umgebung berücksichtigt \cite{mnihplaying}.
+
+Da die Übergangswahrscheinlichkeit und Belohnungsverteilung in modelfreien Verfahren nicht bekannt sind, wird die Aktionswertfunktion $Q(s, a)$ iterativ durch Interaktionen mit der Umgebung geschätzt \cite{busoniucomprehensive}. Beim Q-Learning erfolgt die Aktualisierung der Q-Werte schrittweise auf Basis eines temporalen Differenzfehlers \cite{busoniucomprehensive}. Nach der Ausführung einer Aktion $a$ im Zustand $s$, dem Beobachten der Belohnung $R_{t+1}$ und des Folgezustands $s'$,wird der zugehörige Q-Wert mithilfe der folgenden Update-Regel angepasst \cite{sutton}
 \[
-Q(s, a) = Q(s, a) + \alpha \cdot (r(s, a) + \gamma \cdot \max_{a'}Q(s', a') - Q(s, a))
+Q(s, a) \leftarrow Q(s, a) + \alpha (R_{t+1} + \gamma \max_{a'}Q(s', a') - Q(s, a))
 \]
-Hierbei steht $\alpha$ für die Lernrate, die bestimmt, wie stark neue Informationen bestehende Schätzungen beeinflussen, und $\gamma$ ist der Diskontierungsfaktor, der den Einfluss zukünftiger Belohnungen gewichtet.
+\newline
+Hierbei steht $\alpha$ für die Lernrate, die bestimmt, wie stark neue Informationen bestehende Schätzungen beeinflussen, und $\gamma$ ist der Diskontierungsfaktor, der den Einfluss zukünftiger Belohnungen gewichtet. Dadurch handelt es sich um ein Off-Policy-Verfahren, das direkt gegen die optimale Aktionswertfunktion $Q^*$ konvergiert, auch wenn der Agent während des Lernens einer explorativen Strategie folgt \cite{sutton}.
 \newline
 \newline
-Um sowohl neue Strategien zu entdecken als auch bekannte gute Strategien auszunutzen, wird häufig eine $\epsilon$-greedy-Policy verwendet. Mit Wahrscheinlichkeit $\epsilon$ wählt der Agent eine zufällige Aktion (Exploration), andernfalls entscheidet sich der Agent mit der Wahrscheinlichleit $1-\epsilon$ für die aktuell beste bekannte Aktion (Exploitation). Dadurch wird eine angemessenes Maß an Exploration des Zustandsraums gewährleistet.
+Um ein Gleichgewicht zwischen dem Ausprobieren neuer Aktionen und der Nutzung bereits bekannter, vielversprechender Aktionen zu erreichen, wird in der Praxis häufig eine $\epsilon$-greedy-Policy eingesetzt \cite{szepesvarireinforcement}. Mit Wahrscheinlichkeit $\epsilon$ wählt der Agent eine zufällige Aktion (Exploration), andernfalls entscheidet sich der Agent mit der Wahrscheinlichkeit $1-\epsilon$ für die aktuell beste bekannte Aktion (Exploitation). Auf diese Weise wird Exploration ermöglicht, während gleichzeitig zunehmend bessere Strategien ausgenutzt werden. Unter geeigneten Bedingungen, insbesondere wenn alle Zustands-Aktions-Paare hinreichend oft besucht werden, kann Q-Learning so mit hoher Wahrscheinlichkeit zur optimalen Strategie konvergieren \cite{busoniucomprehensive}.
 
 \subsection{Explodierende State und Action Spaces} \label{explodingstateactionspaces}
-Beim Einsatz von Q-Learning in Multi-Agenten-Systemen führt die Kombination der Zustände und Aktionen aller Agenten zu einem exponentiell wachsenden Zustands- und Aktionsraum. Da Lernen im Kern als Suchprozess verstanden werden kann, wächst die Komplexität des Lernproblems mit der Anzahl beteiligter Variablen schnell an. Besonders im Multi-Agenten-Setting, in dem mehrere Agenten gleichzeitig agieren und interagieren, entstehen folgende Herausforderungen:
+Beim Einsatz von Q-Learning in Multi-Agenten-Systemen führt die Kombination der Zustände und Aktionen aller Agenten zu einem exponentiell wachsenden Zustands- und Aktionsraum \cite{busoniucomprehensive, tuylsmultiagent}. Da Lernen im Kern als Suchprozess verstanden werden kann, wächst die Komplexität des Lernproblems mit der Anzahl beteiligter Variablen schnell an. Besonders im Multi-Agenten-Setting, in dem mehrere Agenten gleichzeitig agieren und interagieren, entstehen folgende Herausforderungen:
 \begin{itemize}
     \item \textbf{Zustandsraum-Explosion:} Der Zustandsraum wächst exponentiell mit der Anzahl der Agenten und beobachtbaren Merkmale der Umgebung.
     \item \textbf{Aktionsraum-Explosion:} Ebenso wächst der gemeinsame Aktionsraum, da potenzielle Aktionskombinationen aller Agenten berücksichtigt werden müssen.
@@ -158,13 +162,13 @@ Durch diese diskrete Modellierung ist es möglich, klassisches tabellarisches Q-
 Das entwickelte Marktmodell wird mithilfe einer simulationsbasierten Multi-Agenten-Umgebung untersucht, in der RZs mittels Q-Learning handeln. Ziel ist es, das Lernverhalten der Agenten sowie die langfristige Verteilung von Aufträgen und Gewinnen unter verschiedenen Kostenbedingungen zu analysieren.
 
 \subsection{Untersuchungsdesign}
-Zur Untersuchung des Lernverhaltens und der Ergebnisverteilung im Marktmodell wurden zwei Simulationsexperimente mit jeweils fünf Agenten durchgeführt. Alle Agenten nutzen tabellarisches Q-Learning zur Entscheidung über ihre Aktionen. Jede Simulation erstreckt sich über 8000 Runden, basierend auf vorherigen Beobachtungen, dass sich der durchschnittliche Reward ab etwa Runde 3000 stabilisiert (siehe Abbildung \dots). Dadurch ist gewährleistet, dass genügend Lernzeit zur Verfügung steht, um langfristige Verhaltensmuster zu analysieren.
+Zur Untersuchung des Lernverhaltens und der Ergebnisverteilung im Marktmodell wurden zwei Simulationsexperimente mit jeweils fünf Agenten durchgeführt. Alle Agenten nutzen tabellarisches Q-Learning zur Entscheidung über ihre Aktionen. Jede Simulation erstreckt sich über 8000 Runden, basierend auf vorherigen Beobachtungen, dass sich der durchschnittliche Reward ab etwa Runde 3000 stabilisiert (siehe Abbildung \ref{fig:social_welfare}). Dadurch ist gewährleistet, dass genügend Lernzeit zur Verfügung steht, um langfristige Verhaltensmuster zu analysieren.
 \newline
 \newline
 Im ersten Experiment werden die Agentenkosten dynamisch modelliert. In jeder Runde zieht jeder Agent seine individuellen Kosten aus einer Normalverteilung mit Erwartungswert $\mu_{cost} = 5$ und Standardabweichung $\sigma_{cost} = 2$ (siehe Kapitel \ref{price}). Durch diese Form der Zufallsvariation ergeben sich wechselnde Marktbedingungen, unter denen alle Agenten theoretisch gleich gute Chancen haben.
 \newline
 \newline
-Im zweiten Experiment werden den Agenten feste Bearbeitungskosten zugewiesen: [2, 3, 5, 7, 8] (siehe Kapitel \ref{price}). Diese Werte decken den vollständigen Zustandsraum des Modells ab. Der daraus resultierende durchschnittliche Auftragswert liegt bei 5, sodass in jeder Runde Agenten mit Gewinn, Break-Even und Verlust gegenüber ihren individuellen Kosten konfrontiert sind.
+Im zweiten Experiment werden den Agenten feste Bearbeitungskosten zugewiesen: $[2, 3, 5, 7, 8]$ (siehe Kapitel \ref{price}). Diese Werte decken den vollständigen Zustandsraum des Modells ab. Der daraus resultierende durchschnittliche Auftragswert liegt bei 5, sodass in jeder Runde Agenten mit Gewinn, Break-Even und Verlust gegenüber ihren individuellen Kosten konfrontiert sind.
 
 \subsection{Analyse des Lernverhaltens (Forschungsfrage 1)}
 Die erste Forschungsfrage untersucht, ob Agenten im dynamischen Marktumfeld durch wiederholte Teilnahme stabile und vorteilhafte Strategien entwickeln. Dazu wird das Verhalten der Agenten im Szenario mit dynamischen Kosten analysiert, bei dem jeder Agent in jeder Runde neue Bearbeitungskosten aus einer Normalverteilung zieht ($\mu_{cost} = 5$, $\sigma_{cost} = 2$).
@@ -197,7 +201,6 @@ Auch die Entwicklung des Social Welfare über die Zeit bestätigt diesen Trend (
 \newline
 Insgesamt lässt sich festhalten, dass Agenten in der Lage sind, unter dynamischen Bedingungen durch Q-Learning vorteilhafte Strategien zu entwickeln. Diese Strategien stabilisieren sich im Zeitverlauf, führen zu verbesserten individuellen Entscheidungen und zu einer kollektiv effizienteren Ressourcennutzung.
 
-\newpage
 \subsection{Analyse der Ergebnisverteilung (Forschungsfrage 2)}
 Die zweite Forschungsfrage untersucht, ob sich Gewinne und Aufträge im Markt langfristig gleichmäßig auf die Agenten verteilen oder ob sich einzelne Agenten als dauerhafte Gewinner durchsetzen. Zur Beantwortung wird das Experiment mit statischen Agentenkosten herangezogen. Die konstanten Kostenverhältnisse erlauben es, strukturelle Vorteile einzelner Agenten sichtbar zu machen.
 \newline
@@ -223,41 +226,46 @@ Die Auswertung der kumulierten Gewinne (siehe Abbildung \ref{fig:reward_agents})
         \label{fig:processed_vs_listed}
     \end{subfigure}
 \end{figure}
-
 Die Analyse der bearbeiteten Aufträge (siehe Abbildung \ref{fig:processed_jobs}) unterstreicht diese Unterschiede. RZ1 und RZ2 bearbeiten nicht nur durchgehend ihre eigenen Jobs, sondern gewinnen auch zahlreiche zusätzliche Aufträge am Markt (7.538 bzw. 7.378). Die übrigen Agenten bearbeiten ausschließlich ihre eigenen Aufträge und gewinnen keine fremde. Diese Verteilung zeigt, dass nur Agenten mit Gewinn tatsächlich am Markt agieren.
 \newline
 Ein weiteres Indiz bietet die Strategieauswertung (siehe Abbildung \ref{fig:processed_vs_listed}). RZ1 und RZ2 listen ihre Aufträge kaum am Markt, sondern bearbeiten sie nahezu vollständig selbst. Für sie besteht kein Anreiz zur Auslagerung, da ihre geringen Kosten eine Selbstbearbeitung besonders profitabel machen. Die übrigen Agenten hingegen listen ihre Aufträge in einem Großteil der Runden, was ihnen bei hoher Konkurrenz nur selten Vorteile verschafft.
 \newline
-\begin{table}[]
+\begin{table}[htb]
     \centering
-    \begin{tabular}{llll}
-        \multicolumn{1}{l|}{RZ} & Mean & Stdabw. & Std/Mean \\ \hline
-        \multicolumn{1}{l|}{RZ1} & 4.90 & 0.70    & 0.1427   \\
-        \multicolumn{1}{l|}{RZ2} & 3.14 & 0.46    & 0.1476   \\
-        \multicolumn{1}{l|}{RZ3} & 4.30 & 4.18    & 0.9734   \\
-        \multicolumn{1}{l|}{RZ4} & 3.73 & 4.18    & 1.1198   \\
-        \multicolumn{1}{l|}{RZ5} & 3.42 & 4.29    & 1.2553  
-    \end{tabular}
-    \caption{Statistische Kennzahlen der durchschnittlichen Rewards je Agent im statischen Szenario.}
-    \label{tab:static_costs}
+    \begin{subtable}{0.48\textwidth}
+        \centering
+        \begin{tabular}{llll}
+            \multicolumn{1}{l|}{RZ} & Mean & Stdabw. & Std/Mean \\ \hline
+            \multicolumn{1}{l|}{RZ1} & 4.90 & 0.70    & 0.1427   \\
+            \multicolumn{1}{l|}{RZ2} & 3.14 & 0.46    & 0.1476   \\
+            \multicolumn{1}{l|}{RZ3} & 4.30 & 4.18    & 0.9734   \\
+            \multicolumn{1}{l|}{RZ4} & 3.73 & 4.18    & 1.1198   \\
+            \multicolumn{1}{l|}{RZ5} & 3.42 & 4.29    & 1.2553  
+        \end{tabular}
+        \caption{Statisches Szenario.}
+        \label{tab:static_costs}
+    \end{subtable}
+    \hfill
+    \begin{subtable}{0.48\textwidth}
+        \centering
+        \begin{tabular}{llll}
+            \multicolumn{1}{l|}{RZ}  & Mean & Stdabw. & Std/Mean \\ \hline
+            \multicolumn{1}{l|}{RZ1} & 3.37 & 3.49    & 1.0362   \\
+            \multicolumn{1}{l|}{RZ2} & 3.41 & 3.42    & 1.0030   \\
+            \multicolumn{1}{l|}{RZ3} & 3.44 & 3.39    & 0.9863   \\
+            \multicolumn{1}{l|}{RZ4} & 3.36 & 3.34    & 0.9941   \\
+            \multicolumn{1}{l|}{RZ5} & 3.46 & 3.38    & 0.9767  
+        \end{tabular}
+        \caption{Dynamisches Szenario.}
+        \label{tab:dynamic_costs}
+    \end{subtable}
+    \caption{Statistische Kennzahlen der durchschnittlichen Rewards je Agent.}
+    \label{tab:rewards_stats}
 \end{table}
 Die statistischen Kennzahlen (Tabelle \ref{tab:static_costs}) stützen diese Beobachtungen, während RZ1 und RZ2 mit niedriger Standardabweichung und geringem $\frac{\sigma}{\mu}$-Verhältnis sehr stabile Erträge erzielen, schwanken die Rewards von RZ3 bis RZ5 stark. Ein Hinweis auf instabile Erträge und wenige gesicherte Gewinnstrategien. Die Agenten mit hohen Fixkosten haben langfristig schlechtere Chancen, sich am Markt zu behaupten.
 \newline
 Bemerkenswert ist, dass RZ2 trotz strukturellem Vorteil nicht vom System profitiert. Dies deutet darauf hin, dass langfristiger Erfolg im Markt nicht allein von der Kostenstruktur abhängt, sondern stark vom erlernten Verhalten des Agenten beeinflusst wird. Ungünstige Strategien oder ineffizientes Bietverhalten können dazu führen, dass selbst gut positionierte Agenten zurückfallen.
 \newline
-\begin{table}[]
-    \centering
-    \begin{tabular}{llll}
-        \multicolumn{1}{l|}{RZ}  & Mean & Stdabw. & Std/Mean \\ \hline
-        \multicolumn{1}{l|}{RZ1} & 3.37 & 3.49    & 1.0362   \\
-        \multicolumn{1}{l|}{RZ2} & 3.41 & 3.42    & 1.0030   \\
-        \multicolumn{1}{l|}{RZ3} & 3.44 & 3.39    & 0.9863   \\
-        \multicolumn{1}{l|}{RZ4} & 3.36 & 3.34    & 0.9941   \\
-        \multicolumn{1}{l|}{RZ5} & 3.46 & 3.38    & 0.9767  
-    \end{tabular}
-    \caption{Statistische Kennzahlen der durchschnittlichen Rewards je Agent im dynamischen Szenario.}
-    \label{tab:dynamic_costs}
-\end{table}
 Ein anderer Befund zeigt sich im dynamischen Szenario mit zufällig gezogenen Kosten (siehe Tabelle \ref{tab:dynamic_costs}). Hier gleichen sich langfristig sowohl die durchschnittlichen Rewards als auch deren Schwankungen zwischen den Agenten weitgehend an. Alle Agenten erreichen ähnlich hohe Mittelwerte bei annähernd gleicher Streuung ($\frac{\sigma}{\mu} \approx 1$). Dies spricht für eine gerechtere Verteilung und zeigt, dass bei hoher Unsicherheit strukturelle Vorteile reduziert werden und sich keine klaren Gewinner etablieren.
 \newline
 Insgesamt zeigen die Ergebnisse, dass sich bei festen Kostenverhältnissen Agenten mit günstiger Kostenstruktur häufiger durchsetzen, vorausgesetzt, sie entwickeln auch effektive Strategien. Lernen und Strategieentwicklung spielen eine zentrale Rolle für den langfristigen Markterfolg. In dynamischeren Umgebungen hingegen nivellieren sich strukturelle Vorteile weitgehend, was zu einer gleichmäßigeren Ergebnisverteilung führt.
@@ -265,7 +273,7 @@ Insgesamt zeigen die Ergebnisse, dass sich bei festen Kostenverhältnissen Agent
 \section{Fazit und Ausblick}
 Die vorliegende Arbeit untersucht, wie sich Agenten im dezentralen Markt für Auftragsvergabe mithilfe von Q-Learning verhalten und welche Verteilungsmuster sich über Zeit hinweg herausbilden. Die Experimente zeigen, dass Agenten unter dynamischen Marktbedingungen in der Lage sind, stabile und ökonomisch sinnvolle Strategien zu entwickeln. Diese Strategien führen nicht nur zu stabileren individuellen Entscheidungen, sondern auch zu einem ansteigenden Social Welfare im Gesamtsystem.
  \newline
-Im statischen Szenario mit festen Agentenkosten hingegen treten deutliche Unterschiede zwischen den Agenten zutage. RZs mit strukturell günstigen Bedingungen erzielen nicht automatisch den höchsten Gewinn – vielmehr ist der Erfolg stark vom erlernten Verhalten abhängig. Damit zeigt sich, dass Lernfähigkeit und Strategiefindung im Markt eine zentrale Rolle für den langfristigen Erfolg spielen.
+Im statischen Szenario mit festen Agentenkosten hingegen treten deutliche Unterschiede zwischen den Agenten zutage. RZs mit strukturell günstigen Bedingungen erzielen nicht automatisch den höchsten Gewinn, vielmehr ist der Erfolg stark vom erlernten Verhalten abhängig. Damit zeigt sich, dass Lernfähigkeit und Strategiefindung im Markt eine zentrale Rolle für den langfristigen Erfolg spielen.
 \newline
 Für zukünftige Arbeiten ergeben sich mehrere sinnvolle Erweiterungen. Erstens könnte das aktuelle Auktionsverfahren durch realistischere Mechanismen ersetzt werden, etwa durch Einführung eines Mindestgebots oder die Anwendung des Vickrey-Verfahrens, bei dem das zweithöchste Gebot den Zuschlagspreis bestimmt. Dies würde die strategische Tiefe erhöhen und könnte das Verhalten der Agenten nochmals deutlich verändern.
 \newline

@@ -172,20 +172,59 @@ Im zweiten Experiment werden den Agenten feste Bearbeitungskosten zugewiesen: $[
 
 \subsection{Analyse des Lernverhaltens (Forschungsfrage 1)}
 Die erste Forschungsfrage untersucht, ob Agenten im dynamischen Marktumfeld durch wiederholte Teilnahme stabile und vorteilhafte Strategien entwickeln. Dazu wird das Verhalten der Agenten im Szenario mit dynamischen Kosten analysiert, bei dem jeder Agent in jeder Runde neue Bearbeitungskosten aus einer Normalverteilung zieht ($\mu_{cost} = 5$, $\sigma_{cost} = 2$).
-\newline
-\begin{figure}
+\begin{figure}[htbp]
     \centering
-    \includegraphics[width=1.0\textwidth]{figures/q_table_rz5.png}
-    \caption{Exemplarische Q-Tabelle von Agent RZ5 nach 8000 Runden.}
-    \label{fig:q_table_rz5}
+
+    % --- Row 1 ---
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/q_table_rz1.png}
+        \caption{RZ1}
+        \label{fig:q_table_rz1}
+    \end{subfigure}\hfill
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/q_table_rz2.png}
+        \caption{RZ2}
+        \label{fig:q_table_rz2}
+    \end{subfigure}
+
+    \vspace{0.8em}
+
+    % --- Row 2 ---
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/q_table_rz3.png}
+        \caption{RZ3}
+        \label{fig:q_table_rz3}
+    \end{subfigure}\hfill
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/q_table_rz4.png}
+        \caption{RZ4}
+        \label{fig:q_table_rz4}
+    \end{subfigure}
+
+    \vspace{0.8em}
+
+    % --- Row 3 (centered) ---
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/q_table_rz5.png}
+        \caption{RZ5}
+        \label{fig:q_table_rz5}
+    \end{subfigure}
+
+    \caption{Q-Tabellen (Heatmaps) für RZ1-RZ5.}
+    \label{fig:q_table_rz}
 \end{figure}
-Ein zentrales Element dieser Analyse ist die exemplarische Q-Tabelle von Agent RZ5 (siehe Abbildung \ref{fig:q_table_rz5}). Sie zeigt, dass der Agent in Zuständen mit Verlusten systematisch die Aktion „Job inserieren“ wählt, unabhängig vom vorherigen Marktzustand. In Situationen mit Gewinn hingegen bevorzugt er das Bieten mit einem moderaten Faktor (0.5 des Gewinn aus der Selbstbearbeitung). Dieses Verhalten ist konsistent mit einer ökonomisch rationalen Strategie: Der Agent vermeidet risikobehaftete Aktionen bei Verlust und nutzt günstige Kostenlagen gezielt aus.
+Ein zentrales Element dieser Analyse sind die Q-Tabellen aller fünf Agenten (siehe Abbildung \ref{fig:q_table_rz}), welche deren final erlernte Strategien nach 8000 Runden darstellen. Trotz individueller Unterschiede zeigt sich ein einheitliches Muster. In Zuständen mit Verlusten bevorzugen alle Agenten die Aktion „Job inserieren“, unabhängig vom vorherigen Marktdruck. Diese Entscheidung entspricht der ökonomischen Intuition, da ein Verkauf am Markt Verluste aus der Selbstbearbeitung vermeiden kann.
 \begin{figure}[!b]
     \begin{subfigure}{0.5\textwidth}
         \centering
         \includegraphics[width=0.9\linewidth]{figures/q_table_convergence.png}
         \caption{Entwicklung der durchschnittlichen Änderung der Q-Tabelle.}
-        \label{fig:q_table_rz3}
+        \label{fig:q_table_convergence}
     \end{subfigure}
     \begin{subfigure}{0.5\textwidth}
         \centering
@@ -195,9 +234,11 @@ Ein zentrales Element dieser Analyse ist die exemplarische Q-Tabelle von Agent R
     \end{subfigure}
     \caption{Lernverhalten der Agenten im dynamischen Szenario.}
 \end{figure}
+Bei profitablen Zuständen fällt die Wahl der besten Aktion differenzierter aus. Einige Agenten (z.B. RZ2, RZ3) entscheiden sich häufiger für das Bieten mit moderaten Faktoren (z.B. 0.5), andere (z.B. RZ4, RZ5) zeigen eine stärkere Präferenz für die Selbstbearbeitung. Diese Vielfalt spricht dafür, dass sich individuelle Lernverläufe ausgebildet haben, die auf den jeweiligen Erfahrungen beruhen.
 \newline
-Die Entwicklung der Q-Werte über die Zeit wird in Abbildung \ref{fig:q_table_rz3} dargestellt. Hier zeigt sich, dass sich die Q-Werte aller Agenten im Laufe der Simulation deutlich stabilisieren. Bereits nach etwa 3000 Runden geht die durchschnittliche Änderung der Q-Tabelle deutlich zurück und pendelt sich auf einem niedrigen Niveau ein. Dies deutet auf eine Konvergenz der individuellen Lernprozesse hin, die Agenten haben stabile Strategien ausgebildet.
+Tabelle \ref{tab:dynamic_costs} fasst die statistischen Kennzahlen der durchschnittlichen Rewards im dynamischen Szenario zusammen. Alle Agenten erreichen ähnliche Mittelwerte und vergleichbare Streuungen, was auf eine faire Ergebnisverteilung trotz individueller Strategien hinweist. Das Verhältnis $\frac{\sigma}{\mu}$ liegt für alle Agenten nahe bei 1, was ebenfalls für eine stabile Lernumgebung spricht.
 \newline
+Die Entwicklung der Q-Werte über die Zeit wird in Abbildung \ref{fig:q_table_convergence} dargestellt. Hier zeigt sich, dass sich die Q-Werte aller Agenten im Laufe der Simulation deutlich stabilisieren. Bereits nach etwa 3000 Runden geht die durchschnittliche Änderung der Q-Tabelle deutlich zurück und pendelt sich auf einem niedrigen Niveau ein. Dies deutet auf eine Konvergenz der individuellen Lernprozesse hin, die Agenten haben stabile Strategien ausgebildet.
 Auch die Entwicklung des Social Welfare über die Zeit bestätigt diesen Trend (siehe Abbildung \ref{fig:social_welfare}). Nach anfänglichen Schwankungen steigt der durchschnittliche Gesamtertrag des Systems kontinuierlich an und erreicht ab Runde 3000 ein weitgehend stabiles Niveau. Dies legt nahe, dass nicht nur individuelle Agenten voneinander lernen, sondern dass sich auch das Zusammenspiel im Markt verbessert.
 \newline
 Insgesamt lässt sich festhalten, dass Agenten in der Lage sind, unter dynamischen Bedingungen durch Q-Learning vorteilhafte Strategien zu entwickeln. Diese Strategien stabilisieren sich im Zeitverlauf, führen zu verbesserten individuellen Entscheidungen und zu einer kollektiv effizienteren Ressourcennutzung.
@@ -264,8 +305,9 @@ Ein weiteres Indiz bietet die Strategieauswertung (siehe Abbildung \ref{fig:proc
     \caption{Statistische Kennzahlen der durchschnittlichen Rewards je Agent.}
     \label{tab:rewards_stats}
 \end{table}
-Die statistischen Kennzahlen (Tabelle \ref{tab:static_costs}) stützen diese Beobachtungen, während RZ1 und RZ2 mit niedriger Standardabweichung und geringem $\frac{\sigma}{\mu}$-Verhältnis sehr stabile Erträge erzielen, schwanken die Rewards von RZ3 bis RZ5 stark. Ein Hinweis auf instabile Erträge und wenige gesicherte Gewinnstrategien. Die Agenten mit hohen Fixkosten haben langfristig schlechtere Chancen, sich am Markt zu behaupten.
 \newline
+\newline
+Die statistischen Kennzahlen (Tabelle \ref{tab:static_costs}) stützen diese Beobachtungen, während RZ1 und RZ2 mit niedriger Standardabweichung und geringem $\frac{\sigma}{\mu}$-Verhältnis sehr stabile Erträge erzielen, schwanken die Rewards von RZ3 bis RZ5 stark. Ein Hinweis auf instabile Erträge und wenige gesicherte Gewinnstrategien. Die Agenten mit hohen Fixkosten haben langfristig schlechtere Chancen, sich am Markt zu behaupten.
 Bemerkenswert ist, dass RZ2 trotz strukturellem Vorteil nicht vom System profitiert. Dies deutet darauf hin, dass langfristiger Erfolg im Markt nicht allein von der Kostenstruktur abhängt, sondern stark vom erlernten Verhalten des Agenten beeinflusst wird. Ungünstige Strategien oder ineffizientes Bietverhalten können dazu führen, dass selbst gut positionierte Agenten zurückfallen.
 \newline
 Ein anderer Befund zeigt sich im dynamischen Szenario mit zufällig gezogenen Kosten (siehe Tabelle \ref{tab:dynamic_costs}). Hier gleichen sich langfristig sowohl die durchschnittlichen Rewards als auch deren Schwankungen zwischen den Agenten weitgehend an. Alle Agenten erreichen ähnlich hohe Mittelwerte bei annähernd gleicher Streuung ($\frac{\sigma}{\mu} \approx 1$). Dies spricht für eine gerechtere Verteilung und zeigt, dass bei hoher Unsicherheit strukturelle Vorteile reduziert werden und sich keine klaren Gewinner etablieren.

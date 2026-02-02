@@ -6,7 +6,7 @@ import statistics
 from matplotlib.patches import Rectangle
 
 
-def plot_q_tables(q_table):
+def plot_q_tables(agent_name, q_table):
     states = [
         "(loss;low_competition)",
         "(loss;medium_competition)",
@@ -45,6 +45,7 @@ def plot_q_tables(q_table):
 
     ax.set_xticklabels(actions, rotation=45)
     ax.set_yticklabels(states, rotation=0)
+    plt.title(f"Q-Tabelle für {agent_name}", loc=)
     plt.show()
 
 

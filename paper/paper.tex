@@ -43,10 +43,12 @@ Im Rahmen des Praktikum zu verteilten adaptiven Systemen wurde die Auftragsverga
 \subsection{Preisgestaltung} \label{price}
 Zur Modellierung eines realitätsnahen Marktumfelds werden zwei verschiedene Varianten der Preis- und Kostenstruktur betrachtet. Eine dynamische, rundenweise variierende Variante sowie ein statisches, festes Kostenmodell für die Agenten.
 \newline
-Im dynamischen Szenario werden sowohl die Bearbeitungskosten der RZs als auch der Auftragswert in jeder Runde neu generiert. Jedes RZ zieht zu Beginn jeder Runde seine individuellen Bearbeitungskosten aus einer Normalverteilung $N(\mu_{cost}, \sigma_{cost})$ mit einem Erwartungswert $\mu_{cost}$ von 5 und einer Standardabweichung $\sigma_{cost}$ von 2. Die gezogenen Werte werden auf positive ganze Zahlen abgerundet und auf einen Wertebereich von 1 bis 10 begrenzt. Diese Begrenzung erleichtert die anschließende Diskretisierung der Zustände.
+Im dynamischen Szenario werden sowohl die Bearbeitungskosten der RZs als auch der Auftragswert in jeder Runde neu generiert. Jedes RZ zieht zu Beginn jeder Runde seine individuellen Bearbeitungskosten aus einer Normalverteilung $N(\mu_{cost}, \sigma_{cost})$ mit einem Erwartungswert $\mu_{cost}$ von 5 und einer Standardabweichung $\sigma_{cost}$ von 2. 
+\newline
+Die gezogenen Werte werden auf positive ganze Zahlen abgerundet und auf einen Wertebereich von 1 bis 10 begrenzt. Diese Begrenzung erleichtert die anschließende Diskretisierung der Zustände.
 Die Wahl von $\mu = 5$ orientiert sich an einem mittleren Kostenniveau, das zugleich als Referenzwert für die Auftragsbewertung dient. Die Standardabweichung $\sigma = 2$ sorgt für eine realistische Streuung der Kosten um diesen Mittelwert. Nach der 68-95-99.7-Regel liegen damit ca. 95\% der gezogenen Werte im Intervall $[1, 9]$, was in Kombination mit der Begrenzung auf $[1, 10]$ einen kontrollierten, aber variierenden Kostenbereich gewährleistet \cite{westfallunderstanding}.
 \newline
-Der Preis, der in einer Runde für alle Aufträge gleichermaßen gilt, wird als der aufgerundete Erwartungswert der gezogenen Kosten aller RZs berechnet. Dadurch ist der Auftragswert immer mindestens so hoch wie der Durchschnitt der Bearbeitungskosten im System. Diese dynamische Preisgestaltung erzeugt ein spannungsreiches Umfeld, in dem RZs je nach individueller Kostensituation entweder Gewinn, Verlust oder Break-Even erzielen können. RZs mit überdurchschnittlich hohen Kosten haben die Möglichkeit, ihre Aufträge am Markt zu verkaufen, während günstigere RZs durch Zukäufe zusätzliche Gewinne erzielen können.
+Der Preis, der in einer Runde für alle Aufträge gleichermaßen gilt, wird als der aufgerundete Erwartungswert der gezogenen Kosten aller RZs berechnet. Dadurch ist der Auftragswert immer mindestens so hoch wie der Durchschnitt der Bearbeitungskosten im System. Diese dynamische Preisgestaltung erzeugt ein spannungsreiches Umfeld, in dem RZs je nach individueller Kostensituation entweder Gewinn, Verlust oder Break-Even erzielen können. RZs mit über-durchschnittlich hohen Kosten haben die Möglichkeit, ihre Aufträge am Markt zu verkaufen, während günstigere RZs durch Zukäufe zusätzliche Gewinne erzielen können.
 \newline
 Im statischen Szenario hingegen erhalten die RZs feste Bearbeitungskosten, die sich über alle Runden nicht verändern. In den durchgeführten Experimenten wurden folgende Kostenwerte verwendet: $[2, 3, 5, 7, 8]$. Diese decken systematisch alle Zustände des Modells ab, da der rundenweise berechnete Preis auch hier auf Basis des Durchschnitts der Agentenkosten entsteht. Anders als im dynamischen Fall verbleiben die Kostenstrukturen jedoch über alle Runden konstant, was es ermöglicht, strukturelle Vorteile einzelner Agenten gezielt zu untersuchen.
 \newline
@@ -55,11 +57,11 @@ Beide Varianten dienen dazu, unterschiedliche Aspekte des Agentenverhaltens und 
 \subsection{Auktionsverfahren}
 In dem betrachteten Marktszenario haben RZs in jeder Runde drei Handlungs-möglichkeiten. Sie können ihren Auftrag selbst bearbeiten, ihn auf dem Markt zum Verkauf anbieten oder mit dem Erlös aus der Selbstbearbeitung ein Gebot für einen weiteren Auftrag abgeben.
 \newline
-Wird ein Auftrag auf dem Markt angeboten, so erfolgt dies ohne eines Mindestgebots. Alle angeboten Aufträge werden gleich behandelt und ohne individuelle Preisuntergrenze gelistet. Die RZs, die ein Gebot abgeben möchten, wählen dazu einen Betrag aus, den sie bereit sind, für die Bearbeitung eines fremden Auftrags zu zahlen. Die Höhe des Gebots orientiert sich an dem Gewinn aus der Selbstbearbeitung in der laufenden Runde, wobei feste Gebotsfaktoren verwendet werden (vgl Abschnitt \ref{actionspace} Aktionsraum).
+Wird ein Auftrag auf dem Markt angeboten, so erfolgt dies ohne eines Mindestgebots. Alle angebotenen Aufträge werden gleich behandelt und ohne individuelle Preisuntergrenze gelistet. Die RZs, die ein Gebot abgeben möchten, wählen dazu einen Betrag aus, den sie bereit sind, für die Bearbeitung eines fremden Auftrags zu zahlen. Die Höhe des Gebots orientiert sich an dem Gewinn aus der Selbstbearbeitung in der laufenden Runde, wobei feste Gebotsfaktoren verwendet werden (vgl Abschnitt \ref{actionspace} Aktionsraum).
 \newline
 Nachdem alle RZs ihre Entscheidung getroffen haben, erfolgt das Matching der Marktangebote. Die auf dem Markt gelisteten Aufträge werden zufällig einem der Bieter zugewiesen, wobei in absteigender Reihenfolge der Gebote vorgegangen wird. Jedes Angebot kann dabei maximal einmal vergeben werden. Es ist somit möglich, dass RZs, die ihren Auftrag auf dem Markt anbieten, keinen Käufer finden. Ebenso konnen RZs, die ein Gebot abgeben, leer ausgehen, wenn kein passender Auftrag mehr verfügbar ist.
 \newline
-Dieses einfache, nicht-kooperative Marktverfahren erschafft einen Auktionsmechanismus mit begrenztem Wettbewerb und Unsicherheit, der des den Agenten erlaubt, durch wiederholte Teilnahme und Lernen über Q-Learning geeignete Strategien zu entwickeln.
+Dieses einfache, nicht-kooperative Marktverfahren erschafft einen Auktionsmechanismus mit begrenztem Wettbewerb und Unsicherheit, der es den Agenten erlaubt, durch wiederholte Teilnahme und Lernen über Q-Learning geeignete Strategien zu entwickeln.
 
 \section{Forschungsfrage}
 Im Zentrum der Arbeit steht die Frage, wie sich das Verhalten und die Ergebnisse im beschriebenen Marktszenario entwickeln, wenn mehrere RZs als autonome Agenten mithilfe von Q-Learning agieren. Dabei werden insbesondere die Stabilität der Strategien, die Herausbildung von Gewinnern und die Verteilung der Aufträge analysiert.
@@ -70,11 +72,11 @@ Daraus ergeben sich die folgenden Forschungsfragen:
     \item Verteilen sich Gewinne und Aufträge langfristig gleichmäßig, oder setzen sich einzelne Agenten als Gewinner durch?
 \end{enumerate}
 
-Um diese Fragen zu beantwortung wird eine simulationsbasierte Analyse durchgeführt. Dazu wird eine Multi-Agenten-Simulation entwickelt, in der mehrere RZs als autonome Agenten mithilfe von Q-Learning im Markt agieren. Die Agenten verfügen dabei jeweils nur über Informationen zu ihren eigenen Kosten und zur Gebühr für die Bearbeitung eines Auftrags, sowie die Marktauslastung der letzten Runde. Untersucht werden sowohl Szenarien mit festen Kosten je Agent als auch mit dynamischen, pro Runde neu gezogenen Kosten. Dieses Vorgehen ermöglicht es, das Zusammenspiel von individuellen Lernprozessen, Strategieentwicklung und Systemdynamik im dezentralen Markt direkt zu beobachten. Analytische Lösungen sind bei komplexem Agentenverhalten und Lernalgorithmen oft nicht praktikabel. Daher bietet die simulationsbasierte Auswertung eine realistische Möglichkeit, die Forschungsfragen systematisch zu untersuchen.
+Um diese Fragen zu beantworten wird eine simulationsbasierte Analyse durchgeführt. Dazu wird eine Multi-Agenten-Simulation entwickelt, in der mehrere RZs als autonome Agenten mithilfe von Q-Learning im Markt agieren. Die Agenten verfügen dabei jeweils nur über Informationen zu ihren eigenen Kosten und zur Gebühr für die Bearbeitung eines Auftrags, sowie die Marktauslastung der letzten Runde. Untersucht werden sowohl Szenarien mit festen Kosten je Agent als auch mit dynamischen, pro Runde neu gezogenen Kosten. Dieses Vorgehen ermöglicht es, das Zusammenspiel von individuellen Lernprozessen, Strategieentwicklung und Systemdynamik im dezentralen Markt direkt zu beobachten. Analytische Lösungen sind bei komplexem Agentenverhalten und Lernalgorithmen oft nicht praktikabel. Daher bietet die simulationsbasierte Auswertung eine realistische Möglichkeit, die Forschungsfragen systematisch zu untersuchen.
 
 \section{Methodik/Grundlagen}
 \subsection{Q-Learning}
-Q-Learning ist ein modellfreies, off-policy Verfahren des Reinforcement Learning, das darauf abzielt, direkt die optimale Aktionswertfunktion $Q^*$ und damit eine optimale Strategie (Policy) $\pi^*$ zu erlernen, dabei kann der Agent einer explorativen Policy folgen, während das Lernen unabhängig davon erfolgt. Zentral ist die Q-Funktion $Q(s, a)$, die den erwarteten kumulierten Ertrag angibt, wenn der Agent in Zustand $s$ die Aktion $a$ wählt und anschließend optimal handelt \cite{sutton}. Das Update basiert auf der maximalen Bewertung des Folgezustands und erfordert kein Modell der Umwelt \cite{busoniucomprehensive}. 
+Q-Learning ist ein modellfreies, off-policy Verfahren des Reinforcement Learning, das darauf abzielt, direkt die optimale Aktionswertfunktion $Q^*$ und damit eine optimale Strategie (Policy) $\pi^*$ zu erlernen. Dabei kann der Agent einer explorativen Policy folgen, während das Lernen unabhängig davon erfolgt. Zentral ist die Q-Funktion, die den erwarteten kumulierten Ertrag angibt, wenn der Agent in Zustand $s$ die Aktion $a$ wählt und anschließend optimal handelt \cite{sutton}. Das Update basiert auf der maximalen Bewertung des Folgezustands und erfordert kein Modell der Umwelt \cite{busoniucomprehensive}.
 \newline
 Die optimale Q-Funktion $Q^*$ erfüllt die Bellman-Optimalitätsgleichung und beschreibt den erwarteten kumulierten Ertrag, wenn der Agent sich in einem Zustand $s$ befindet, die Aktion $a$ ausführt und anschließend optimal handelt \cite{szepesvarireinforcement}. Formal ergibt sich
 \[
@@ -119,7 +121,7 @@ Der Zustand eines Agenten setzt sich aus zwei diskretisierten Merkmalen zusammen
     Wobei $W_t$ die Menge der in Runde $t$ erfolgreichen Gebote bezeichnet und $b$ für die Höhe der jeweiligen Gebote (für $|W_t| = 0$ wird $\bar{p}_t = 0$ gesetzt)\newline
     Zusätztlich wird erfasst, wie viele Aufträge in einer Runde tatsächlich über den Markt vergeben wurden
     \[v_t = |W_t|\]
-    Preis- und Volumeninformationen werden zu einem gemeinsamen Marktauslastungswert kombiniert. Dazu wird der durchschnittlich gezahlte Preis mit einem relativen Handelsvolumen multipliziert, das sich aus dem Verhältnis der erfolgreichen Handel zur maximal möglichen Anzahl an Transfers $N$ (Anzahl der Agenten) ergibt
+    Preis- und Volumeninformationen werden zu einem gemeinsamen Marktauslastungswert kombiniert. Dazu wird der durchschnittlich gezahlte Preis mit einem relativen Handelsvolumen multipliziert, das sich aus dem Verhältnis des erfolgreichen Handels zur maximal möglichen Anzahl an Transfers $N$ (Anzahl der Agenten) ergibt
     \[m_t = \bar{p}_t \cdot \frac{v_t}{N}\]
     Um zufällige Schwankungen einzelner Runden zu reduzieren, wird der Marktauslastungswert über ein gleitendes Fenster der letzten Runden gemittelt.\newline
     Die Diskretisierung erfolgt relativ zur eigenen Markthistorie. Hierzu wird der Marktauslastungswert der vergangenen Runden anhand des 33\%- und 66\%-Perzentils in drei Breiche unterteilt:
@@ -135,8 +137,8 @@ Die Kombination dieser beiden Merkmale ergibt einen Zustandsraum von $3 \times 3
 \textbf{Aktionsraum} \label{actionspace}\newline
 Um den Anforderungen von tabellarischem Q-Learning gerecht zu werden, wurde der Aktionsraum als festes, endliches Set diskreter Entscheidungen modelliert. Der Agent kann in jeder Runde aus folgenden sechs Aktionen wählen:
 \begin{enumerate}
-    \item [] Aktion 0: Eigenen Auftrag auf dem Markt anbieten
-    \item [] Aktion 1: Auftrag selbst bearbeiten
+    \item [] Aktion 0: Eigenen Auftrag auf dem Markt anbieten.
+    \item [] Aktion 1: Auftrag selbst bearbeiten.
     \item [] Aktion 2-5: Auf fremde Aufträge bieten, wobei das Gebot einem festen vielfachen $F \in \{0.25, 0.5, 0.75, 1.0\}$ des Erlöses entspricht, den der Agent durch die Selbstbearbeitung erzielen würde.
 \end{enumerate}
 Die Entscheidung zum Bieten wurde auf vier diskrete Bietstufen beschränkt, um den kontinuierlichen Aktionsraum kompakt und lernbar zu halten. Damit ergibt sich der folgende diskrete Aktionsraum:
@@ -148,9 +150,9 @@ A = \{0, 1, 2, 3, 4, 5\}
 Die Belohnung eines Agenten basiert auf dem ökonomischen Ergebnis seiner Aktion in der jeweiligen Runde. Im Erfolgsfall entspricht die Belohnung dem tatsächlichen Gewinn, also dem Erlös aus dem erhaltenen Auftrag abzüglich der Bearbeitungskosten. Wird ein eigener Auftrag selbst bearbeitet oder erfolgreich auf dem Markt verkauft bzw. ersteigert und anschließend bearbeitet, ergibt sich eine positive Belohnung, sofern Gewinn erzielt wird.
 \newline
 Um jedoch unrealistisches Verhalten zu verhindern, erhält der Agent eine explizite Strafbelohnung von -10, wenn er eine Bietaktion (Aktion 2-5) auswählt, obwohl in dieser Runde kein Gewinn durch Selbstbearbeitung hätte erzielen können. Auf diese Weise wird vermieden, dass Agenten systematisch Gebote abgeben, obwohl ihnen dafür keine
-wirtschaftliche Grundlage zur verfügung steht.
+wirtschaftliche Grundlage zur Verfügung steht.
 \newline
-Nicht erfolgreiche Aktionen (z.B. kein Zuschlag bei Geboten oder keine Abnahme des angebotenen Aufztrags) führen zu einer Belohnung wie bei der Selbstbearbeitung.
+Nicht erfolgreiche Aktionen (z.B. kein Zuschlag bei Geboten oder keine Abnahme des angebotenen Auftrages) führen zu einer Belohnung wie bei der Selbstbearbeitung.
 \newline
 \newline
 Durch diese diskrete Modellierung ist es möglich, klassisches tabellarisches Q-Learning auch in einem dezentralen Multi-Agenten-Markt anzuwenden, ohne dass der Zustands- und Aktionsraum unhandhabbar groß wird.
@@ -162,11 +164,7 @@ Das entwickelte Marktmodell wird mithilfe einer simulationsbasierten Multi-Agent
 \subsection{Untersuchungsdesign}
 Zur Untersuchung des Lernverhaltens und der Ergebnisverteilung im Marktmodell wurden zwei Simulationsexperimente mit jeweils fünf Agenten durchgeführt. Alle Agenten nutzen tabellarisches Q-Learning zur Entscheidung über ihre Aktionen. Jede Simulation erstreckt sich über 8000 Runden, basierend auf vorherigen Beobachtungen, dass sich der durchschnittliche Reward ab etwa Runde 3000 stabilisiert (siehe Abbildung \ref{fig:social_welfare}). Dadurch ist gewährleistet, dass genügend Lernzeit zur Verfügung steht, um langfristige Verhaltensmuster zu analysieren.
 \newline
-\newline
-\newline
-\newline
 Im ersten Experiment werden die Agentenkosten dynamisch modelliert. In jeder Runde zieht jeder Agent seine individuellen Kosten aus einer Normalverteilung mit Erwartungswert $\mu_{cost} = 5$ und Standardabweichung $\sigma_{cost} = 2$ (siehe Kapitel \ref{price}). Durch diese Form der Zufallsvariation ergeben sich wechselnde Marktbedingungen, unter denen alle Agenten theoretisch gleich gute Chancen haben.
-\newline
 \newline
 Im zweiten Experiment werden den Agenten feste Bearbeitungskosten zugewiesen: $[2, 3, 5, 7, 8]$ (siehe Kapitel \ref{price}). Diese Werte decken den vollständigen Zustandsraum des Modells ab. Der daraus resultierende durchschnittliche Auftragswert liegt bei 5, sodass in jeder Runde Agenten mit Gewinn, Break-Even und Verlust gegenüber ihren individuellen Kosten konfrontiert sind.
 
@@ -218,6 +216,7 @@ Die erste Forschungsfrage untersucht, ob Agenten im dynamischen Marktumfeld durc
     \caption{Q-Tabellen (Heatmaps) für RZ1-RZ5.}
     \label{fig:q_table_rz}
 \end{figure}
+\newline
 Ein zentrales Element dieser Analyse sind die Q-Tabellen aller fünf Agenten (siehe Abbildung \ref{fig:q_table_rz}), welche deren final erlernte Strategien nach 8000 Runden darstellen. Trotz individueller Unterschiede zeigt sich ein einheitliches Muster. In Zuständen mit Verlusten bevorzugen alle Agenten die Aktion „Job inserieren“, unabhängig vom vorherigen Marktdruck. Diese Entscheidung entspricht der ökonomischen Intuition, da ein Verkauf am Markt Verluste aus der Selbstbearbeitung vermeiden kann.
 \begin{figure}[!b]
     \begin{subfigure}{0.5\textwidth}
@@ -234,12 +233,15 @@ Ein zentrales Element dieser Analyse sind die Q-Tabellen aller fünf Agenten (si
     \end{subfigure}
     \caption{Lernverhalten der Agenten im dynamischen Szenario.}
 \end{figure}
+\newline
 Bei profitablen Zuständen fällt die Wahl der besten Aktion differenzierter aus. Einige Agenten (z.B. RZ2, RZ3) entscheiden sich häufiger für das Bieten mit moderaten Faktoren (z.B. 0.5), andere (z.B. RZ4, RZ5) zeigen eine stärkere Präferenz für die Selbstbearbeitung. Diese Vielfalt spricht dafür, dass sich individuelle Lernverläufe ausgebildet haben, die auf den jeweiligen Erfahrungen beruhen.
 \newline
 Tabelle \ref{tab:dynamic_costs} fasst die statistischen Kennzahlen der durchschnittlichen Rewards im dynamischen Szenario zusammen. Alle Agenten erreichen ähnliche Mittelwerte und vergleichbare Streuungen, was auf eine faire Ergebnisverteilung trotz individueller Strategien hinweist. Das Verhältnis $\frac{\sigma}{\mu}$ liegt für alle Agenten nahe bei 1, was ebenfalls für eine stabile Lernumgebung spricht.
 \newline
-Die Entwicklung der Q-Werte über die Zeit wird in Abbildung \ref{fig:q_table_convergence} dargestellt. Hier zeigt sich, dass sich die Q-Werte aller Agenten im Laufe der Simulation deutlich stabilisieren. Bereits nach etwa 3000 Runden geht die durchschnittliche Änderung der Q-Tabelle deutlich zurück und pendelt sich auf einem niedrigen Niveau ein. Dies deutet auf eine Konvergenz der individuellen Lernprozesse hin, die Agenten haben stabile Strategien ausgebildet.
-Auch die Entwicklung des Social Welfare über die Zeit bestätigt diesen Trend (siehe Abbildung \ref{fig:social_welfare}). Nach anfänglichen Schwankungen steigt der durchschnittliche Gesamtertrag des Systems kontinuierlich an und erreicht ab Runde 3000 ein weitgehend stabiles Niveau. Dies legt nahe, dass nicht nur individuelle Agenten voneinander lernen, sondern dass sich auch das Zusammenspiel im Markt verbessert.
+Die Entwicklung der Q-Werte über die Zeit wird in Abbildung \ref{fig:q_table_convergence} dargestellt. Hier zeigt sich, dass sich die Q-Werte aller Agenten im Laufe der Simulation deutlich stabilisieren. Bereits nach etwa 3000 Runden geht die durchschnittliche Änderung der Q-Tabelle deutlich zurück und pendelt sich auf einem niedrigen Niveau ein. Dies deutet auf eine Konvergenz der individuellen Lernprozesse hin, d.h. die Agenten haben stabile Strategien ausgebildet.
+Auch die Entwicklung des Social Welfare über die Zeit bestätigt diesen Trend (siehe Abbildung \ref{fig:social_welfare}).
+\newpage
+Nach anfänglichen Schwankungen steigt der durchschnittliche Gesamtertrag des Systems kontinuierlich an und erreicht ab Runde 3000 ein weitgehend stabiles Niveau. Dies legt nahe, dass nicht nur individuelle Agenten voneinander lernen, sondern dass sich auch das Zusammenspiel im Markt verbessert.
 \newline
 Insgesamt lässt sich festhalten, dass Agenten in der Lage sind, unter dynamischen Bedingungen durch Q-Learning vorteilhafte Strategien zu entwickeln. Diese Strategien stabilisieren sich im Zeitverlauf, führen zu verbesserten individuellen Entscheidungen und zu einer kollektiv effizienteren Ressourcennutzung.
 
@@ -270,9 +272,8 @@ Die Auswertung der kumulierten Gewinne (siehe Abbildung \ref{fig:reward_agents})
     \caption{Analyse der Auftragsverteilung.}
 \end{figure}
 Die Analyse der bearbeiteten Aufträge (siehe Abbildung \ref{fig:processed_jobs}) unterstreicht diese Unterschiede. RZ1 und RZ2 bearbeiten nicht nur durchgehend ihre eigenen Jobs, sondern gewinnen auch zahlreiche zusätzliche Aufträge am Markt (7.538 bzw. 7.378). Die übrigen Agenten bearbeiten ausschließlich ihre eigenen Aufträge und gewinnen keine fremde. Diese Verteilung zeigt, dass nur Agenten mit Gewinn tatsächlich am Markt agieren.
-\newline
+\newpage
 Ein weiteres Indiz bietet die Strategieauswertung (siehe Abbildung \ref{fig:processed_vs_listed}). RZ1 und RZ2 listen ihre Aufträge kaum am Markt, sondern bearbeiten sie nahezu vollständig selbst. Für sie besteht kein Anreiz zur Auslagerung, da ihre geringen Kosten eine Selbstbearbeitung besonders profitabel machen. Die übrigen Agenten hingegen listen ihre Aufträge in einem Großteil der Runden, was ihnen bei hoher Konkurrenz nur selten Vorteile verschafft.
-\newline
 \begin{table}[htb]
     \centering
     \begin{subtable}{0.48\textwidth}
@@ -306,22 +307,23 @@ Ein weiteres Indiz bietet die Strategieauswertung (siehe Abbildung \ref{fig:proc
     \label{tab:rewards_stats}
 \end{table}
 \newline
-\newline
 Die statistischen Kennzahlen (Tabelle \ref{tab:static_costs}) stützen diese Beobachtungen, während RZ1 und RZ2 mit niedriger Standardabweichung und geringem $\frac{\sigma}{\mu}$-Verhältnis sehr stabile Erträge erzielen, schwanken die Rewards von RZ3 bis RZ5 stark. Ein Hinweis auf instabile Erträge und wenige gesicherte Gewinnstrategien. Die Agenten mit hohen Fixkosten haben langfristig schlechtere Chancen, sich am Markt zu behaupten.
 Bemerkenswert ist, dass RZ2 trotz strukturellem Vorteil nicht vom System profitiert. Dies deutet darauf hin, dass langfristiger Erfolg im Markt nicht allein von der Kostenstruktur abhängt, sondern stark vom erlernten Verhalten des Agenten beeinflusst wird. Ungünstige Strategien oder ineffizientes Bietverhalten können dazu führen, dass selbst gut positionierte Agenten zurückfallen.
-\newline
+\newpage
 Ein anderer Befund zeigt sich im dynamischen Szenario mit zufällig gezogenen Kosten (siehe Tabelle \ref{tab:dynamic_costs}). Hier gleichen sich langfristig sowohl die durchschnittlichen Rewards als auch deren Schwankungen zwischen den Agenten weitgehend an. Alle Agenten erreichen ähnlich hohe Mittelwerte bei annähernd gleicher Streuung ($\frac{\sigma}{\mu} \approx 1$). Dies spricht für eine gerechtere Verteilung und zeigt, dass bei hoher Unsicherheit strukturelle Vorteile reduziert werden und sich keine klaren Gewinner etablieren.
 \newline
-Insgesamt zeigen die Ergebnisse, dass sich bei festen Kostenverhältnissen Agenten mit günstiger Kostenstruktur häufiger durchsetzen, vorausgesetzt, sie entwickeln auch effektive Strategien. Lernen und Strategieentwicklung spielen eine zentrale Rolle für den langfristigen Markterfolg. In dynamischeren Umgebungen hingegen nivellieren sich strukturelle Vorteile weitgehend, was zu einer gleichmäßigeren Ergebnisverteilung führt.
+Insgesamt zeigen die Ergebnisse, dass sich bei festen Kostenverhältnissen Agenten mit günstiger Kostenstruktur häufiger durchsetzen, vorausgesetzt, sie entwickeln auch effektive Strategien. Lernen und Strategieentwicklung spielen für den langfristigen Markterfolg eine zentrale Rolle. In dynamischeren Umgebungen hingegen nivellieren sich strukturelle Vorteile weitgehend, was zu einer gleichmäßigeren Ergebnisverteilung führt.
 
 \section{Fazit und Ausblick}
 Die vorliegende Arbeit untersucht, wie sich Agenten im dezentralen Markt für Auftragsvergabe mithilfe von Q-Learning verhalten und welche Verteilungsmuster sich über Zeit hinweg herausbilden. Die Experimente zeigen, dass Agenten unter dynamischen Marktbedingungen in der Lage sind, stabile und ökonomisch sinnvolle Strategien zu entwickeln. Diese Strategien führen nicht nur zu stabileren individuellen Entscheidungen, sondern auch zu einem ansteigenden Social Welfare im Gesamtsystem.
  \newline
 Im statischen Szenario mit festen Agentenkosten hingegen treten deutliche Unterschiede zwischen den Agenten zutage. RZs mit strukturell günstigen Bedingungen erzielen nicht automatisch den höchsten Gewinn, vielmehr ist der Erfolg stark vom erlernten Verhalten abhängig. Damit zeigt sich, dass Lernfähigkeit und Strategiefindung im Markt eine zentrale Rolle für den langfristigen Erfolg spielen.
-\newline
-Für zukünftige Arbeiten ergeben sich mehrere sinnvolle Erweiterungen. Erstens könnte das aktuelle Auktionsverfahren durch realistischere Mechanismen ersetzt werden, etwa durch Einführung eines Mindestgebots oder die Anwendung des Vickrey-Verfahrens, bei dem das zweithöchste Gebot den Zuschlagspreis bestimmt. Dies würde die strategische Tiefe erhöhen und könnte das Verhalten der Agenten nochmals deutlich verändern.
-\newline
-Zweitens könnte die Knappheit von Aufträgen erhöht werden, etwa durch eine Reduktion der zu vergebenden Jobs pro Runde oder durch das Einführen eines externen Faktors, der den Marktpreis beeinflusst. Ein solches Szenario würde die Wettbewerbssituation verschärfen und den Druck auf die Agenten erhöhen, was zu komplexeren Lernverläufen und dynamischeren Strategien führen dürfte.
+\newpage
+Für zukünftige Arbeiten ergeben sich mehrere sinnvolle Erweiterungen. 
+\begin{enumerate}
+    \item Das aktuelle Auktionsverfahren kann durch realistischere Mechanismen ersetzt werden, etwa durch Einführung eines Mindestgebots oder die Anwendung des Vickrey-Verfahrens, bei dem das zweithöchste Gebot den Zuschlagspreis bestimmt. Dies würde die strategische Tiefe erhöhen und könnte das Verhalten der Agenten nochmals deutlich verändern.
+    \item Die Knappheit von Aufträgen kann erhöht werden, etwa durch eine Reduktion der zu vergebenden Jobs pro Runde oder durch das Einführen eines externen Faktors, der den Marktpreis beeinflusst. Ein solches Szenario würde die Wettbewerbssituation verschärfen und den Druck auf die Agenten erhöhen, was zu komplexeren Lernverläufen und dynamischeren Strategien führen dürfte.
+\end{enumerate}
 
 % ****************************************************************************
 % BIBLIOGRAPHY AREA

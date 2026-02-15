@@ -38,7 +38,7 @@ In dieser Arbeit wird ein dezentraler Markt zur Auftragsvergabe zwischen Rechenz
 \end{abstract}
 
 \section{Einführung}
-Im Rahmen des Praktikum zu verteilten adaptiven Systemen wurde die Auftragsvergabe zwischen Rechenzentren (RZs) bisher zentral oder regelbasiert organisiert. In dieser Arbeit wird das Szenario zu einem dezentralen Markt weiterentwickelt, in dem mehrere RZs als autonome, lernende Agenten agieren. Sie können Aufträge selbstbearbeiten, auf dem Markt anbieten oder mit Erlösen aus der Selbstbearbeitung auf fremde Aufträge bieten. Ziel ist es, mit Hilfe von Q-Learning zu untersuchen, wie sich Strategien, Gewinne und die Verteilung der Aufträge unter realistischen Marktbedingungen entwickeln.
+Im Rahmen des Praktikums zu verteilten adaptiven Systemen wurde die Auftragsvergabe zwischen Rechenzentren (RZs) bisher zentral oder regelbasiert organisiert. In dieser Arbeit wird das Szenario zu einem dezentralen Markt weiterentwickelt, in dem mehrere RZs als autonome, lernende Agenten agieren. Sie können Aufträge selbst bearbeiten, auf dem Markt anbieten oder mit Erlösen aus der Selbstbearbeitung auf fremde Aufträge bieten. Ziel ist es, mit Hilfe von Q-Learning zu untersuchen, wie sich Strategien, Gewinne und die Verteilung der Aufträge unter realistischen Marktbedingungen entwickeln.
 
 \subsection{Preisgestaltung} \label{price}
 Zur Modellierung eines realitätsnahen Marktumfelds werden zwei verschiedene Varianten der Preis- und Kostenstruktur betrachtet. Eine dynamische, rundenweise variierende Variante sowie ein statisches, festes Kostenmodell für die Agenten.
@@ -57,7 +57,7 @@ Beide Varianten dienen dazu, unterschiedliche Aspekte des Agentenverhaltens und 
 \subsection{Auktionsverfahren}
 In dem betrachteten Marktszenario haben RZs in jeder Runde drei Handlungs-möglichkeiten. Sie können ihren Auftrag selbst bearbeiten, ihn auf dem Markt zum Verkauf anbieten oder mit dem Erlös aus der Selbstbearbeitung ein Gebot für einen weiteren Auftrag abgeben.
 \newline
-Wird ein Auftrag auf dem Markt angeboten, so erfolgt dies ohne eines Mindestgebots. Alle angebotenen Aufträge werden gleich behandelt und ohne individuelle Preisuntergrenze gelistet. Die RZs, die ein Gebot abgeben möchten, wählen dazu einen Betrag aus, den sie bereit sind, für die Bearbeitung eines fremden Auftrags zu zahlen. Die Höhe des Gebots orientiert sich an dem Gewinn aus der Selbstbearbeitung in der laufenden Runde, wobei feste Gebotsfaktoren verwendet werden (vgl Abschnitt \ref{actionspace} Aktionsraum).
+Wird ein Auftrag auf dem Markt angeboten, so erfolgt dies ohne Mindestgebot. Alle angebotenen Aufträge werden gleich behandelt und ohne individuelle Preisuntergrenze gelistet. Die RZs, die ein Gebot abgeben möchten, wählen dazu einen Betrag aus, den sie bereit sind, für die Bearbeitung eines fremden Auftrags zu zahlen. Die Höhe des Gebots orientiert sich an dem Gewinn aus der Selbstbearbeitung in der laufenden Runde, wobei feste Gebotsfaktoren verwendet werden (vgl Abschnitt \ref{actionspace} Aktionsraum).
 \newline
 Nachdem alle RZs ihre Entscheidung getroffen haben, erfolgt das Matching der Marktangebote. Die auf dem Markt gelisteten Aufträge werden zufällig einem der Bieter zugewiesen, wobei in absteigender Reihenfolge der Gebote vorgegangen wird. Jedes Angebot kann dabei maximal einmal vergeben werden. Es ist somit möglich, dass RZs, die ihren Auftrag auf dem Markt anbieten, keinen Käufer finden. Ebenso konnen RZs, die ein Gebot abgeben, leer ausgehen, wenn kein passender Auftrag mehr verfügbar ist.
 \newline
